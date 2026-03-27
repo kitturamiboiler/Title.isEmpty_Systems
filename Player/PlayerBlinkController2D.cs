@@ -12,6 +12,7 @@ public class PlayerBlinkController2D : MonoBehaviour
     [SerializeField] private Rigidbody2D playerRb;
     [SerializeField] private WeaponData weaponData;
     [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private Transform firePoint; // 단검 발사 지점
 
     [Header("Ground / Wall Check")]
     [SerializeField] private LayerMask groundMask;
@@ -87,6 +88,11 @@ public class PlayerBlinkController2D : MonoBehaviour
         if (weaponData == null || weaponData.daggerProjectilePrefab == null)
             return;
 
+        if (mainCam == null)
+            mainCam = Camera.main;
+        if (mainCam == null)
+            return;
+
         // 기존 단검이 있다면 먼저 회수
         if (currentDagger != null)
         {
@@ -95,19 +101,28 @@ public class PlayerBlinkController2D : MonoBehaviour
         }
 
         Vector3 mouseWorldPos = mainCam.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 direction = (mouseWorldPos - transform.position);
+        mouseWorldPos.z = 0f;
+
+        Vector2 firePosition = firePoint != null ? (Vector2)firePoint.position : (Vector2)transform.position;
+        Vector2 direction = ((Vector2)mouseWorldPos - firePosition);
+        if (direction.sqrMagnitude <= Mathf.Epsilon)
+            return;
         direction.Normalize();
+
+        // 2D 투사체가 진행 방향을 바라보도록 회전 동기화
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        Quaternion spawnRotation = Quaternion.Euler(0f, 0f, angle);
 
         GameObject daggerObj = Instantiate(
             weaponData.daggerProjectilePrefab,
-            transform.position,
-            Quaternion.identity
+            firePosition,
+            spawnRotation
         );
 
         currentDagger = daggerObj.GetComponent<DaggerProjectile2D>();
         if (currentDagger != null)
         {
-            currentDagger.Launch(transform.position, direction, weaponData);
+            currentDagger.Launch(firePosition, direction, weaponData);
         }
     }
 
