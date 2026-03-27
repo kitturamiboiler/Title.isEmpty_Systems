@@ -13,6 +13,7 @@ public class PlayerBlinkController2D : MonoBehaviour
     [SerializeField] private WeaponData weaponData;
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Transform firePoint; // 단검 발사 지점
+    [SerializeField] private Collider2D playerCollider;
 
     [Header("Ground / Wall Check")]
     [SerializeField] private LayerMask groundMask;
@@ -41,7 +42,6 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     // Coyote / Input Buffer
     private float _lastGroundedOrWallTime = -999f;
-    private float _blinkInputBufferedUntil = -1f;
     private float _jumpInputBufferedUntil = -1f;
 
     private void Awake()
@@ -51,6 +51,8 @@ public class PlayerBlinkController2D : MonoBehaviour
 
         if (spriteRenderer == null)
             spriteRenderer = GetComponent<SpriteRenderer>();
+        if (playerCollider == null)
+            playerCollider = GetComponent<Collider2D>();
 
         _originalLayer = gameObject.layer;
         if (spriteRenderer != null)
@@ -67,7 +69,6 @@ public class PlayerBlinkController2D : MonoBehaviour
         HandleThrowInput();
         HandleBlinkInput();
         HandleJumpBufferInput();
-        ProcessBufferedInputs();
     }
 
     #region Input
@@ -84,10 +85,8 @@ public class PlayerBlinkController2D : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {
-            if (!TryBlinkToDagger())
-            {
-                _blinkInputBufferedUntil = Time.time + GetInputBufferTime();
-            }
+            // Blink는 오발사를 막기 위해 버퍼링하지 않고 즉시 1회 시도만 한다.
+            TryBlinkToDagger();
         }
     }
 
@@ -127,6 +126,9 @@ public class PlayerBlinkController2D : MonoBehaviour
         if (!aimPlane.Raycast(aimRay, out float enter))
             return;
         Vector3 mouseWorldPos = aimRay.GetPoint(enter);
+
+        // 실행 순서 보장: 방향 전환(Flip) 후 firePoint 위치를 읽어 발사한다.
+        UpdateCharacterFlip(mouseWorldPos);
 
         Vector2 firePosition = firePoint != null ? (Vector2)firePoint.position : (Vector2)transform.position;
         Vector2 direction = ((Vector2)mouseWorldPos - firePosition);
@@ -178,7 +180,7 @@ public class PlayerBlinkController2D : MonoBehaviour
         // 1) 끼임 방지: 단검이 벽에 박힌 상태면 Normal 방향으로 0.5 유닛 Offset
         if (currentDagger.IsStuckToWall)
         {
-            finalPos += currentDagger.LastHitNormal * 0.5f;
+            finalPos += CalculateWallSafeOffset(currentDagger.LastHitNormal);
         }
 
         // 블링크 순간 속도 0으로 초기화 (Snappy한 조작감)
@@ -223,6 +225,7 @@ public class PlayerBlinkController2D : MonoBehaviour
             isOnWall = false;
             _lastGroundedOrWallTime = Time.time;
             ResetAirBlinkCount();
+            ClearBufferedInputs();
         }
         else if ((wallMask.value & layerBit) != 0)
         {
@@ -230,6 +233,7 @@ public class PlayerBlinkController2D : MonoBehaviour
             isGrounded = false;
             _lastGroundedOrWallTime = Time.time;
             ResetAirBlinkCount();
+            ClearBufferedInputs();
         }
     }
 
@@ -253,19 +257,10 @@ public class PlayerBlinkController2D : MonoBehaviour
         currentAirBlinkCount = maxAirBlinkCount;
     }
 
-    private void ProcessBufferedInputs()
+    private void ClearBufferedInputs()
     {
-        if (_blinkInputBufferedUntil > Time.time)
-        {
-            if (TryBlinkToDagger())
-            {
-                _blinkInputBufferedUntil = -1f;
-            }
-        }
-        else
-        {
-            _blinkInputBufferedUntil = -1f;
-        }
+        // Misfire 방지: 지면/벽 접촉 순간 예약 입력을 전부 비운다.
+        _jumpInputBufferedUntil = -1f;
     }
 
     public bool ConsumeBufferedJumpInput()
@@ -341,11 +336,13 @@ public class PlayerBlinkController2D : MonoBehaviour
         ghostSr.sortingLayerID = spriteRenderer.sortingLayerID;
         ghostSr.sortingOrder = spriteRenderer.sortingOrder - 1;
 
+        float ghostLife = weaponData != null ? weaponData.ghostDuration : 0.1f;
         Color ghostColor = new Color(128f / 255f, 0f, 0f, 0.5f); // #800000
         ghostSr.color = ghostColor;
 
-        float ghostLife = weaponData != null ? weaponData.ghostDuration : 0.1f;
-        Destroy(ghost, ghostLife);
+        // 코루틴 대신 초경량 컴포넌트로 페이드 처리해 GC 부담을 낮춤.
+        GhostFade fade = ghost.AddComponent<GhostFade>();
+        fade.Initialize(ghostSr, ghostLife);
     }
 
     private void TriggerCameraShake()
@@ -380,6 +377,34 @@ public class PlayerBlinkController2D : MonoBehaviour
 
         camTransform.localPosition = originalPos;
         _cameraShakeCoroutine = null;
+    }
+
+    private Vector2 CalculateWallSafeOffset(Vector2 hitNormal)
+    {
+        Vector2 normal = hitNormal.normalized;
+        float baseOffset = 0.5f;
+        float safetyMargin = 0.02f;
+
+        if (playerCollider == null)
+        {
+            return normal * (baseOffset + safetyMargin);
+        }
+
+        // 콜라이더 반경을 Normal 축에 투영해 벽 끼임을 방지한다.
+        Vector2 ext = playerCollider.bounds.extents;
+        float projectedHalfSize = Mathf.Abs(normal.x) * ext.x + Mathf.Abs(normal.y) * ext.y;
+        return normal * (baseOffset + projectedHalfSize + safetyMargin);
+    }
+
+    private void UpdateCharacterFlip(Vector3 targetWorldPos)
+    {
+        Vector3 localScale = transform.localScale;
+        float dx = targetWorldPos.x - transform.position.x;
+        if (Mathf.Abs(dx) <= 0.001f) return;
+
+        float sign = dx >= 0f ? 1f : -1f;
+        localScale.x = Mathf.Abs(localScale.x) * sign;
+        transform.localScale = localScale;
     }
 
     #endregion
@@ -530,5 +555,40 @@ public class PlayerBlinkController2D : MonoBehaviour
     }
 
     #endregion
+}
+
+internal sealed class GhostFade : MonoBehaviour
+{
+    private SpriteRenderer _renderer;
+    private float _duration;
+    private float _elapsed;
+    private Color _baseColor;
+
+    public void Initialize(SpriteRenderer renderer, float duration)
+    {
+        _renderer = renderer;
+        _duration = Mathf.Max(0.01f, duration);
+        _baseColor = _renderer != null ? _renderer.color : Color.white;
+    }
+
+    private void Update()
+    {
+        if (_renderer == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        _elapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(_elapsed / _duration);
+        Color c = _baseColor;
+        c.a = Mathf.Lerp(_baseColor.a, 0f, t);
+        _renderer.color = c;
+
+        if (_elapsed >= _duration)
+        {
+            Destroy(gameObject);
+        }
+    }
 }
 
