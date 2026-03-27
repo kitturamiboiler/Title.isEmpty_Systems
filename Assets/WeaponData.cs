@@ -8,6 +8,8 @@ public class WeaponData : ScriptableObject
     public float projectileSpeed = 20f; // 탄속 (단도 날아가는 속도)
     public float blinkCooldown = 3f;
     public float maxDistance = 15f;     // 단검이 유효한 최대 거리
+    public float coyoteTime = 0.1f;    // 낭떠러지 끝에서의 자비
+    public float inputBufferTime = 0.1f;  // 키씹 방지 -> 선 입력
 
     [Header("Blink Invincibility")]
     public float invincibleDuration = 0.15f;
@@ -18,6 +20,10 @@ public class WeaponData : ScriptableObject
     public Sprite weaponSprite;
     public ParticleSystem hitParticle;
     public ParticleSystem blinkEffectPrefab; // 블링크 히트 스톱용 짧은 이펙트
+    public float daggerTrailTime = 0.08f; // 단도 날아가는 궤적 속도감 
+    public float ghostDuration = 0.1f; // 척살 후 반 투명화
+    public float cameraShakeDuration = 0.06f; // 카메라 앵글 흔들림 지속
+    public float cameraShakeIntensity = 0.08f; // 카메라 애글 흔들림
 
     [Header("Prefabs")]
     public GameObject daggerProjectilePrefab; // 2D 단검 투사체 프리팹

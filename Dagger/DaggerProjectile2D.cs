@@ -9,6 +9,7 @@ public class DaggerProjectile2D : MonoBehaviour
 {
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private WeaponData weaponData;
+    [SerializeField] private TrailRenderer trailRenderer;
 
     private Vector2 launchPosition;
     private bool isLaunched;
@@ -28,6 +29,9 @@ public class DaggerProjectile2D : MonoBehaviour
     {
         if (rb == null)
             rb = GetComponent<Rigidbody2D>();
+
+        if (trailRenderer == null)
+            trailRenderer = GetComponent<TrailRenderer>();
     }
 
     public void Launch(Vector2 origin, Vector2 direction, WeaponData data)
@@ -44,6 +48,13 @@ public class DaggerProjectile2D : MonoBehaviour
         if (rb != null)
         {
             rb.velocity = direction.normalized * weaponData.projectileSpeed;
+        }
+
+        if (trailRenderer != null)
+        {
+            trailRenderer.time = weaponData != null ? weaponData.daggerTrailTime : 0.08f;
+            trailRenderer.Clear();
+            trailRenderer.emitting = true;
         }
     }
 

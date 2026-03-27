@@ -28,14 +28,21 @@ public class PlayerBlinkController2D : MonoBehaviour
     private DaggerProjectile2D currentDagger;
 
     private Camera mainCam;
+    private Plane aimPlane = new Plane(Vector3.forward, Vector3.zero);
 
     // 히트 스톱 중복 실행 방지
     private bool _isHitStopping;
 
     // 블링크 후 무적(I-frame) 관리
     private System.Collections.Coroutine _invincibleCoroutine;
+    private System.Collections.Coroutine _cameraShakeCoroutine;
     private float _originalAlpha = 1f;
     private int _originalLayer;
+
+    // Coyote / Input Buffer
+    private float _lastGroundedOrWallTime = -999f;
+    private float _blinkInputBufferedUntil = -1f;
+    private float _jumpInputBufferedUntil = -1f;
 
     private void Awake()
     {
@@ -59,6 +66,8 @@ public class PlayerBlinkController2D : MonoBehaviour
     {
         HandleThrowInput();
         HandleBlinkInput();
+        HandleJumpBufferInput();
+        ProcessBufferedInputs();
     }
 
     #region Input
@@ -75,7 +84,20 @@ public class PlayerBlinkController2D : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {
-            TryBlinkToDagger();
+            if (!TryBlinkToDagger())
+            {
+                _blinkInputBufferedUntil = Time.time + GetInputBufferTime();
+            }
+        }
+    }
+
+    private void HandleJumpBufferInput()
+    {
+        // 점프 실제 실행은 다른 이동 스크립트에서 담당하더라도,
+        // 입력 예약 타임스탬프를 여기서 관리하면 같은 버퍼 윈도우를 공유할 수 있다.
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _jumpInputBufferedUntil = Time.time + GetInputBufferTime();
         }
     }
 
@@ -100,8 +122,11 @@ public class PlayerBlinkController2D : MonoBehaviour
             currentDagger = null;
         }
 
-        Vector3 mouseWorldPos = mainCam.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPos.z = 0f;
+        // 카메라 타입(Ortho/Perspective)과 무관하게 정확한 조준을 위한 Ray-Plane Cast
+        Ray aimRay = mainCam.ScreenPointToRay(Input.mousePosition);
+        if (!aimPlane.Raycast(aimRay, out float enter))
+            return;
+        Vector3 mouseWorldPos = aimRay.GetPoint(enter);
 
         Vector2 firePosition = firePoint != null ? (Vector2)firePoint.position : (Vector2)transform.position;
         Vector2 direction = ((Vector2)mouseWorldPos - firePosition);
@@ -126,17 +151,18 @@ public class PlayerBlinkController2D : MonoBehaviour
         }
     }
 
-    private void TryBlinkToDagger()
+    private bool TryBlinkToDagger()
     {
         if (currentDagger == null || !currentDagger.CanBlink)
-            return;
+            return false;
 
-        // 무한 체공 방지: 공중에서 블링크 횟수 소모
-        bool isInAir = !isGrounded && !isOnWall;
+        // 코요테 타임: 땅/벽을 막 벗어난 뒤 짧은 시간은 지상 판정처럼 취급
+        bool hasCoyoteGrace = (Time.time - _lastGroundedOrWallTime) <= GetCoyoteTime();
+        bool isInAir = !isGrounded && !isOnWall && !hasCoyoteGrace;
         if (isInAir && currentAirBlinkCount <= 0)
         {
             // 공중 블링크 횟수 초과
-            return;
+            return false;
         }
 
         if (isInAir)
@@ -145,6 +171,7 @@ public class PlayerBlinkController2D : MonoBehaviour
             currentAirBlinkCount--;
         }
 
+        Vector2 startPos = transform.position;
         Vector2 targetPos = currentDagger.CurrentPosition;
         Vector2 finalPos = targetPos;
 
@@ -164,7 +191,9 @@ public class PlayerBlinkController2D : MonoBehaviour
         transform.position = finalPos;
 
         // 블링크 경로 잔상 연출
-        SpawnBlinkTrail((Vector2)transform.position, targetPos);
+        SpawnBlinkTrail(startPos, finalPos);
+        CreateGhost(startPos, finalPos);
+        TriggerCameraShake();
 
         // 도착 후 무적(I-frame) 시작
         StartBlinkInvincibility();
@@ -175,6 +204,7 @@ public class PlayerBlinkController2D : MonoBehaviour
         // 단검은 즉시 파괴(회수)
         Destroy(currentDagger.gameObject);
         currentDagger = null;
+        return true;
     }
 
     #endregion
@@ -191,12 +221,14 @@ public class PlayerBlinkController2D : MonoBehaviour
         {
             isGrounded = true;
             isOnWall = false;
+            _lastGroundedOrWallTime = Time.time;
             ResetAirBlinkCount();
         }
         else if ((wallMask.value & layerBit) != 0)
         {
             isOnWall = true;
             isGrounded = false;
+            _lastGroundedOrWallTime = Time.time;
             ResetAirBlinkCount();
         }
     }
@@ -219,6 +251,43 @@ public class PlayerBlinkController2D : MonoBehaviour
     private void ResetAirBlinkCount()
     {
         currentAirBlinkCount = maxAirBlinkCount;
+    }
+
+    private void ProcessBufferedInputs()
+    {
+        if (_blinkInputBufferedUntil > Time.time)
+        {
+            if (TryBlinkToDagger())
+            {
+                _blinkInputBufferedUntil = -1f;
+            }
+        }
+        else
+        {
+            _blinkInputBufferedUntil = -1f;
+        }
+    }
+
+    public bool ConsumeBufferedJumpInput()
+    {
+        // 이동 스크립트가 착지 직후 호출하면 입력 버퍼링 효과를 얻을 수 있다.
+        if (_jumpInputBufferedUntil > Time.time)
+        {
+            _jumpInputBufferedUntil = -1f;
+            return true;
+        }
+
+        return false;
+    }
+
+    private float GetCoyoteTime()
+    {
+        return weaponData != null ? weaponData.coyoteTime : 0.1f;
+    }
+
+    private float GetInputBufferTime()
+    {
+        return weaponData != null ? weaponData.inputBufferTime : 0.1f;
     }
 
     #endregion
@@ -251,6 +320,66 @@ public class PlayerBlinkController2D : MonoBehaviour
 
         // 짧게 유지 후 제거
         Destroy(trailObj, 0.1f);
+    }
+
+    /// <summary>
+    /// 블링크 이동 경로에 플레이어 실루엣 잔상을 잠깐 남긴다.
+    /// </summary>
+    private void CreateGhost(Vector2 from, Vector2 to)
+    {
+        if (spriteRenderer == null || spriteRenderer.sprite == null) return;
+
+        GameObject ghost = new GameObject("BlinkGhost");
+        ghost.transform.position = from;
+        ghost.transform.rotation = transform.rotation;
+        ghost.transform.localScale = transform.localScale;
+
+        SpriteRenderer ghostSr = ghost.AddComponent<SpriteRenderer>();
+        ghostSr.sprite = spriteRenderer.sprite;
+        ghostSr.flipX = spriteRenderer.flipX;
+        ghostSr.flipY = spriteRenderer.flipY;
+        ghostSr.sortingLayerID = spriteRenderer.sortingLayerID;
+        ghostSr.sortingOrder = spriteRenderer.sortingOrder - 1;
+
+        Color ghostColor = new Color(128f / 255f, 0f, 0f, 0.5f); // #800000
+        ghostSr.color = ghostColor;
+
+        float ghostLife = weaponData != null ? weaponData.ghostDuration : 0.1f;
+        Destroy(ghost, ghostLife);
+    }
+
+    private void TriggerCameraShake()
+    {
+        if (mainCam == null) return;
+
+        if (_cameraShakeCoroutine != null)
+        {
+            StopCoroutine(_cameraShakeCoroutine);
+        }
+
+        _cameraShakeCoroutine = StartCoroutine(PerformCameraShake());
+    }
+
+    private System.Collections.IEnumerator PerformCameraShake()
+    {
+        if (mainCam == null) yield break;
+
+        Transform camTransform = mainCam.transform;
+        Vector3 originalPos = camTransform.localPosition;
+        float duration = weaponData != null ? weaponData.cameraShakeDuration : 0.06f;
+        float intensity = weaponData != null ? weaponData.cameraShakeIntensity : 0.08f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            Vector2 offset = Random.insideUnitCircle * intensity;
+            camTransform.localPosition = originalPos + new Vector3(offset.x, offset.y, 0f);
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        camTransform.localPosition = originalPos;
+        _cameraShakeCoroutine = null;
     }
 
     #endregion
@@ -328,6 +457,8 @@ public class PlayerBlinkController2D : MonoBehaviour
     /// </summary>
     private System.Collections.IEnumerator PerformBlinkInvincibility()
     {
+        // 중요: Project Settings > Physics 2D 에서 PlayerInvincible 레이어 충돌 매트릭스를 설정해야
+        // 적 투사체/트랩과의 충돌 무시가 정상 동작한다.
         // 레이어 이름을 실제 레이어 인덱스로 변환
         int invLayer = LayerMask.NameToLayer(weaponData.invincibleLayerName);
         int origLayer = LayerMask.NameToLayer(weaponData.originalLayerName);
