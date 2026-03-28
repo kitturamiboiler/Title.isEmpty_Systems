@@ -34,6 +34,9 @@ public class PlayerBlinkController2D : MonoBehaviour
     // 히트 스톱 중복 실행 방지
     private bool _isHitStopping;
 
+    /// <summary>단검 조준 플립 직후 이동 플립이 덮어쓰지 않도록 사용.</summary>
+    private float _lastAttackFlipGameTime = -999f;
+
     // 블링크 후 무적(I-frame) 관리
     private Coroutine _invincibleCoroutine;
     private Coroutine _cameraShakeCoroutine;
@@ -61,6 +64,27 @@ public class PlayerBlinkController2D : MonoBehaviour
         }
 
         mainCam = Camera.main;
+        ResetAirBlinkCount();
+    }
+
+    /// <summary>히트스톱 중에는 이동 스크립트가 velocity.x 등을 건드리지 않도록.</summary>
+    public bool IsHitStopBlockingMovement => _isHitStopping;
+
+    /// <summary>UpdateCharacterFlip로 방향이 바뀐 시각(이동 플립 억제용).</summary>
+    public float LastAttackFlipGameTime => _lastAttackFlipGameTime;
+
+    /// <summary>점프는 착지 가능 시에만 소비해야 하므로, 소비 전에 버퍼 존재 여부만 확인.</summary>
+    public bool HasBufferedJumpInput() => _jumpInputBufferedUntil > Time.time;
+
+    /// <summary>이동용 지면 판정과 동기화할 때 공중 블링크 횟수를 복구.</summary>
+    public void SyncAirBlinkAfterFloorLanding()
+    {
+        ResetAirBlinkCount();
+    }
+
+    /// <summary>벽 타기에 붙었을 때 공중 블링크 횟수를 복구.</summary>
+    public void SyncAirBlinkAfterWallAttach()
+    {
         ResetAirBlinkCount();
     }
 
@@ -411,7 +435,10 @@ public class PlayerBlinkController2D : MonoBehaviour
         if (Mathf.Abs(dx) <= 0.001f) return;
 
         float sign = dx >= 0f ? 1f : -1f;
-        localScale.x = Mathf.Abs(localScale.x) * sign;
+        float newX = Mathf.Abs(localScale.x) * sign;
+        if (Mathf.Abs(localScale.x - newX) > 0.0001f)
+            _lastAttackFlipGameTime = Time.time;
+        localScale.x = newX;
         transform.localScale = localScale;
     }
 
