@@ -43,3 +43,30 @@ Core Movement: FSM(유한 상태 머신) 기반의 Walk / Jump 연동.
 Sprite Animation: Aseprite에서 작업한 픽셀 아트 스프라이트 시트 적용 및 방향 전환(Flip) 최적화.
 
 Stress Test: 윈도우 환경에서의 '좌클릭 + Shift' 극한 연타를 통한 예외 상황 검증.
+
+
+##[미해결 버그 리스트 (To-do for Tomorrow)]
+
+지상 점프 불능 (Grounded Detection Failure)
+
+현상: 바닥에 서 있어도 점프 입력이 무시됨.
+
+가설 1: Ground Cast Distance(0.12)가 너무 짧아 레이가 바닥 콜라이더에 도달 못 함.
+
+가설 2: Ground Mask와 실제 바닥 오브젝트의 레이어 불일치.
+
+벽 부착 중 블링크 트리거 오류
+
+현상: 벽에 붙은 상태에서 단검은 나가지만 Shift 입력 시 블링크 이동이 발생하지 않음.
+
+가설 1: 벽 타기 상태(isWallClimbing)가 블링크 로직의 시작 조건을 차단 중.
+
+가설 2: 벽에 붙은 직후 AirBlinkCount가 초기화되지 않아 횟수 부족으로 판정됨.
+
+단검 지면 미끄러짐 현상 (Dagger Friction/Collision Error)
+
+현상: 바닥에 던진 단검이 박히지 않고 바닥을 타고 미끄러짐.
+
+가설 1: 단검의 OnTriggerEnter2D 로직에서 Ground 레이어 충돌 시 Rigidbody를 Kinematic으로 바꾸는 처리가 누락됨.
+
+가설 2: 단검 프리팹의 콜라이더가 너무 작아 바닥 콜라이더 사이로 '터널링' 발생.
