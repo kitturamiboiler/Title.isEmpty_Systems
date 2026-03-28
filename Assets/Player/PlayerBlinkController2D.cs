@@ -35,8 +35,8 @@ public class PlayerBlinkController2D : MonoBehaviour
     private bool _isHitStopping;
 
     // 블링크 후 무적(I-frame) 관리
-    private System.Collections.Coroutine _invincibleCoroutine;
-    private System.Collections.Coroutine _cameraShakeCoroutine;
+    private Coroutine _invincibleCoroutine;
+    private Coroutine _cameraShakeCoroutine;
     private float _originalAlpha = 1f;
     private int _originalLayer;
 
