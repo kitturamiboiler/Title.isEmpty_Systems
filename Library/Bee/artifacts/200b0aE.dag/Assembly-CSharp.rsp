@@ -405,6 +405,7 @@
 "Assets/Interface/IProjectile.cs"
 "Assets/Manager/EffectManager.cs"
 "Assets/Player/PlayerBlinkController2D.cs"
+"Assets/Player/PlayerMovement2D.cs"
 "Assets/WeaponData.cs"
 -langversion:9.0
 /deterministic

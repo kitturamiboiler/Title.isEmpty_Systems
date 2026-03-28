@@ -11,6 +11,14 @@ public class WeaponData : ScriptableObject
     public float coyoteTime = 0.1f;    // 낭떠러지 끝에서의 자비
     public float inputBufferTime = 0.1f;  // 키씹 방지 -> 선 입력
 
+    [Header("Wall Jump")]
+    [Tooltip("벽 반대 방향으로 밀어내는 수평 속도 성분.")]
+    public float wallJumpHorizontalForce = 7f;
+    [Tooltip("벽 점프 시 위로 주는 수직 속도.")]
+    public float wallJumpVerticalForce = 12f;
+    [Tooltip("벽 점프 직후 벽 방향 입력 무시 시간(지그재그 상승 방지). 약 0.15초 권장.")]
+    public float wallJumpInputLockTime = 0.15f;
+
     [Header("Blink Invincibility")]
     public float invincibleDuration = 0.15f;
     public string invincibleLayerName = "PlayerInvincible";
