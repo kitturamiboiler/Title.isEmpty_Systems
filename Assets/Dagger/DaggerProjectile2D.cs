@@ -47,7 +47,7 @@ public class DaggerProjectile2D : MonoBehaviour
 
         if (rb != null)
         {
-            rb.velocity = direction.normalized * weaponData.projectileSpeed;
+            rb.linearVelocity = direction.normalized * weaponData.projectileSpeed;
         }
 
         if (trailRenderer != null)
@@ -91,7 +91,7 @@ public class DaggerProjectile2D : MonoBehaviour
             // 벽에 "박힌" 느낌을 위해 속도를 0으로
             if (rb != null)
             {
-                rb.velocity = Vector2.zero;
+                rb.linearVelocity = Vector2.zero;
                 rb.isKinematic = true;
             }
         }
@@ -109,7 +109,7 @@ public class DaggerProjectile2D : MonoBehaviour
             // 적에게 박혀 있는 연출을 원하면 속도 0, 아니면 그대로 둬도 됨
             if (rb != null)
             {
-                rb.velocity = Vector2.zero;
+                rb.linearVelocity = Vector2.zero;
                 rb.isKinematic = true;
             }
         }

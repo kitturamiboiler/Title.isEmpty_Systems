@@ -35,8 +35,8 @@ public class PlayerBlinkController2D : MonoBehaviour
     private bool _isHitStopping;
 
     // 블링크 후 무적(I-frame) 관리
-    private System.Collections.Coroutine _invincibleCoroutine;
-    private System.Collections.Coroutine _cameraShakeCoroutine;
+    private Coroutine _invincibleCoroutine;
+    private Coroutine _cameraShakeCoroutine;
     private float _originalAlpha = 1f;
     private int _originalLayer;
 
@@ -186,7 +186,7 @@ public class PlayerBlinkController2D : MonoBehaviour
         // 블링크 순간 속도 0으로 초기화 (Snappy한 조작감)
         if (playerRb != null)
         {
-            playerRb.velocity = Vector2.zero;
+            playerRb.linearVelocity = Vector2.zero;
         }
 
         // 실제 위치 이동

@@ -30,7 +30,7 @@ public abstract class ProjectileBase : MonoBehaviour, IProjectile
 
         if (rb != null)
         {
-            rb.velocity = launchDirection * weaponData.projectileSpeed;
+            rb.linearVelocity = launchDirection * weaponData.projectileSpeed;
         }
 
         OnLaunched();
