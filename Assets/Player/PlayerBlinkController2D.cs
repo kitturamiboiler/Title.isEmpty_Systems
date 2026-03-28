@@ -21,7 +21,7 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     [Header("Air Blink Settings")]
     [SerializeField] private int maxAirBlinkCount = 1;
-    private int currentAirBlinkCount;
+    [SerializeField] private int currentAirBlinkCount;
 
     private bool isGrounded;
     private bool isOnWall;
@@ -104,8 +104,17 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     #region Throw & Blink Logic
 
+
     private void ThrowDagger()
     {
+        if (currentDagger != null) return;
+
+        // 공중에서 던질 때 카운트 차감
+        bool hasCoyoteGrace = (Time.time - _lastGroundedOrWallTime) <= GetCoyoteTime();
+        bool isInAir = !isGrounded && !isOnWall && !hasCoyoteGrace;
+        if (isInAir && currentAirBlinkCount <= 0) return;
+        if (isInAir) currentAirBlinkCount--;
+
         if (weaponData == null || weaponData.daggerProjectilePrefab == null)
             return;
 
@@ -114,20 +123,18 @@ public class PlayerBlinkController2D : MonoBehaviour
         if (mainCam == null)
             return;
 
-        // 기존 단검이 있다면 먼저 회수
+        // 기존 단검이 있다면 먼저 회수 (중복 방지)
         if (currentDagger != null)
         {
             Destroy(currentDagger.gameObject);
             currentDagger = null;
         }
 
-        // 카메라 타입(Ortho/Perspective)과 무관하게 정확한 조준을 위한 Ray-Plane Cast
         Ray aimRay = mainCam.ScreenPointToRay(Input.mousePosition);
         if (!aimPlane.Raycast(aimRay, out float enter))
             return;
         Vector3 mouseWorldPos = aimRay.GetPoint(enter);
 
-        // 실행 순서 보장: 방향 전환(Flip) 후 firePoint 위치를 읽어 발사한다.
         UpdateCharacterFlip(mouseWorldPos);
 
         Vector2 firePosition = firePoint != null ? (Vector2)firePoint.position : (Vector2)transform.position;
@@ -136,7 +143,6 @@ public class PlayerBlinkController2D : MonoBehaviour
             return;
         direction.Normalize();
 
-        // 2D 투사체가 진행 방향을 바라보도록 회전 동기화
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         Quaternion spawnRotation = Quaternion.Euler(0f, 0f, angle);
 
@@ -152,7 +158,6 @@ public class PlayerBlinkController2D : MonoBehaviour
             currentDagger.Launch(firePosition, direction, weaponData);
         }
     }
-
     private bool TryBlinkToDagger()
     {
         if (currentDagger == null || !currentDagger.CanBlink)
@@ -215,8 +220,11 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        Debug.Log("충돌: " + collision.gameObject.name + " / 레이어: " + LayerMask.LayerToName(collision.gameObject.layer));
         int layer = collision.gameObject.layer;
         int layerBit = 1 << layer;
+        // Dagger layer 추가 -> 단검 충돌 무시
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Dagger")) return;
 
         // OnCollisionEnter2D + LayerMask를 사용해 지면/벽 판정
         if ((groundMask.value & layerBit) != 0)
