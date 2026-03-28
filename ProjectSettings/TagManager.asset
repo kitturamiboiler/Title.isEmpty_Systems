@@ -3,18 +3,19 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Dagger
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Wall
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
+  - Ground
+  - Player
+  - PlayerInvincible
+  - Dagger
   - 
   - 
   - 

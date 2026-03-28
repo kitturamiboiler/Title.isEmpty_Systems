@@ -1,3 +1,0 @@
-Temp/ScriptUpdater/325267976/1637893957_ProjectileBase.cs => Assets/Dagger/ProjectileBase.cs
-Temp/ScriptUpdater/325267976/1621380799_DaggerProjectile2D.cs => Assets/Dagger/DaggerProjectile2D.cs
-Temp/ScriptUpdater/325267976/440521596_PlayerBlinkController2D.cs => Assets/Player/PlayerBlinkController2D.cs
