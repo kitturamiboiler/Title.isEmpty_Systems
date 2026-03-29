@@ -33,11 +33,16 @@ public class PlayerMovement2D : MonoBehaviour
 
     [Header("Ground Check (floor only)")]
     [SerializeField] private LayerMask groundMask;
-    [SerializeField] private Vector2 groundCheckOffset = new Vector2(0f, -0.5f);
+    [SerializeField] private Vector2 groundCheckOffset = new Vector2(0f, 0f);
     [SerializeField] private Vector2 groundBoxSize = new Vector2(0.45f, 0.08f);
-    [SerializeField] private float groundCastDistance = 0.12f;
-    [Tooltip("히트 법선이 위쪽일 때만 바닥으로 인정 (벽 슬라이드 점프 방지).")]
-    [SerializeField] private float minFloorNormalY = 0.55f;
+    [Tooltip("WeaponData 없을 때 BoxCast 거리.")]
+    [SerializeField] private float groundCastDistanceFallback = 0.28f;
+    [Tooltip("WeaponData 없을 때 바닥 법선 최소 Y.")]
+    [SerializeField] private float minFloorNormalYFallback = 0.35f;
+    [Tooltip("WeaponData 없을 때 발 모서리 보조 레이 안쪽 여백.")]
+    [SerializeField] private float groundFootCornerInsetFallback = 0.06f;
+    [Tooltip("WeaponData 없을 때 캐스트 시작 상승.")]
+    [SerializeField] private float groundCheckVerticalLiftFallback = 0.02f;
 
     [Header("Wall Climb")]
     [SerializeField] private LayerMask wallMask;
@@ -94,6 +99,9 @@ public class PlayerMovement2D : MonoBehaviour
 
         _defaultGravityScale = rb.gravityScale;
     }
+
+    /// <summary>블링크/투척 로직에서 벽 타기는 지상·코요테와 동일하게 '벽 접촉'으로 취급.</summary>
+    public bool IsWallClimbing => _currentPhase == MovementPhase.WallClimb;
 
     private void Update()
     {
@@ -364,26 +372,63 @@ public class PlayerMovement2D : MonoBehaviour
     private bool EvaluateFloorGrounded(out RaycastHit2D bestHit)
     {
         bestHit = default;
-        Vector2 origin = (Vector2)transform.position + groundCheckOffset;
+        if (groundMask.value == 0)
+            return false;
+
+        float castDist = weaponData != null ? weaponData.groundBoxCastDistance : groundCastDistanceFallback;
+        float minNy = weaponData != null ? weaponData.groundMinFloorNormalY : minFloorNormalYFallback;
+        float cornerInset = weaponData != null ? weaponData.groundFootCornerInset : groundFootCornerInsetFallback;
+        float lift = weaponData != null ? weaponData.groundCheckVerticalLift : groundCheckVerticalLiftFallback;
+
+        Vector2 boxOrigin;
+        if (bodyCollider != null)
+        {
+            Bounds b = bodyCollider.bounds;
+            boxOrigin = new Vector2(b.center.x, b.min.y) + groundCheckOffset + Vector2.up * lift;
+        }
+        else
+            boxOrigin = (Vector2)transform.position + groundCheckOffset + Vector2.up * lift;
 
         RaycastHit2D hit = Physics2D.BoxCast(
-            origin,
+            boxOrigin,
             groundBoxSize,
             0f,
             Vector2.down,
-            groundCastDistance,
+            castDist,
             groundMask,
             -Mathf.Infinity,
             Mathf.Infinity);
 
-        if (hit.collider == null)
-            return false;
+        if (hit.collider != null && hit.normal.y >= minNy)
+        {
+            bestHit = hit;
+            return true;
+        }
 
-        if (hit.normal.y < minFloorNormalY)
-            return false;
+        if (bodyCollider != null)
+        {
+            Bounds b = bodyCollider.bounds;
+            float footY = b.min.y + lift * 0.5f;
+            Vector2 left = new Vector2(b.min.x + cornerInset, footY) + (Vector2)groundCheckOffset;
+            Vector2 right = new Vector2(b.max.x - cornerInset, footY) + (Vector2)groundCheckOffset;
+            float rayLen = castDist + Mathf.Abs(lift) + groundBoxSize.y * 0.5f;
 
-        bestHit = hit;
-        return true;
+            hit = Physics2D.Raycast(left, Vector2.down, rayLen, groundMask);
+            if (hit.collider != null && hit.normal.y >= minNy)
+            {
+                bestHit = hit;
+                return true;
+            }
+
+            hit = Physics2D.Raycast(right, Vector2.down, rayLen, groundMask);
+            if (hit.collider != null && hit.normal.y >= minNy)
+            {
+                bestHit = hit;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private struct WallProbe
@@ -397,7 +442,11 @@ public class PlayerMovement2D : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        Vector2 origin = (Vector2)transform.position + groundCheckOffset;
+        float castDist = weaponData != null ? weaponData.groundBoxCastDistance : groundCastDistanceFallback;
+        float lift = weaponData != null ? weaponData.groundCheckVerticalLift : groundCheckVerticalLiftFallback;
+        Vector2 origin = bodyCollider != null
+            ? new Vector2(bodyCollider.bounds.center.x, bodyCollider.bounds.min.y) + groundCheckOffset + Vector2.up * lift
+            : (Vector2)transform.position + groundCheckOffset + Vector2.up * lift;
         Gizmos.color = Color.green;
         Vector2 a = origin + new Vector2(-groundBoxSize.x * 0.5f, -groundBoxSize.y * 0.5f);
         Vector2 br = origin + new Vector2(groundBoxSize.x * 0.5f, -groundBoxSize.y * 0.5f);
@@ -409,7 +458,7 @@ public class PlayerMovement2D : MonoBehaviour
         Gizmos.DrawLine(d, a);
 
         Gizmos.color = Color.yellow;
-        Vector2 end = origin + Vector2.down * (groundCastDistance + groundBoxSize.y * 0.5f);
+        Vector2 end = origin + Vector2.down * (castDist + groundBoxSize.y * 0.5f);
         Gizmos.DrawLine(origin, end);
 
         if (bodyCollider == null)

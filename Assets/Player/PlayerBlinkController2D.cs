@@ -10,6 +10,7 @@ public class PlayerBlinkController2D : MonoBehaviour
 {
     [Header("Refs")]
     [SerializeField] private Rigidbody2D playerRb;
+    [SerializeField] private PlayerMovement2D playerMovement;
     [SerializeField] private WeaponData weaponData;
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Transform firePoint; // 단검 발사 지점
@@ -46,11 +47,18 @@ public class PlayerBlinkController2D : MonoBehaviour
     // Coyote / Input Buffer
     private float _lastGroundedOrWallTime = -999f;
     private float _jumpInputBufferedUntil = -1f;
+    private float _lastThrowTime = -999f;
+
+    private static readonly RaycastHit2D[] BlinkSweepHits = new RaycastHit2D[16];
+    private static readonly Collider2D[] BlinkOverlapBuffer = new Collider2D[16];
+    private static readonly int[] BlinkProcessedInstanceIds = new int[32];
 
     private void Awake()
     {
         if (playerRb == null)
             playerRb = GetComponent<Rigidbody2D>();
+        if (playerMovement == null)
+            playerMovement = GetComponent<PlayerMovement2D>();
 
         if (spriteRenderer == null)
             spriteRenderer = GetComponent<SpriteRenderer>();
@@ -131,13 +139,16 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     private void ThrowDagger()
     {
+        // 1. 투척 쿨타임 체크 (0.5초 연속 투척 방지)
+        if (Time.time < _lastThrowTime + 0.5f) return;
+
+        // 이미 던진 단검이 맵에 존재하면 새로 던질 수 없음
         if (currentDagger != null) return;
 
-        // 공중에서 던질 때 카운트 차감
-        bool hasCoyoteGrace = (Time.time - _lastGroundedOrWallTime) <= GetCoyoteTime();
-        bool isInAir = !isGrounded && !isOnWall && !hasCoyoteGrace;
-        if (isInAir && currentAirBlinkCount <= 0) return;
-        if (isInAir) currentAirBlinkCount--;
+        // 2. 공중 체공 제한 해제 (산나비식 스윙을 위해 주석 처리)
+        bool isInAir = IsAirborneForBlinkRules();
+        // if (isInAir && currentAirBlinkCount <= 0) return;
+        // if (isInAir) currentAirBlinkCount--;
 
         if (weaponData == null || weaponData.daggerProjectilePrefab == null)
             return;
@@ -146,13 +157,6 @@ public class PlayerBlinkController2D : MonoBehaviour
             mainCam = Camera.main;
         if (mainCam == null)
             return;
-
-        // 기존 단검이 있다면 먼저 회수 (중복 방지)
-        if (currentDagger != null)
-        {
-            Destroy(currentDagger.gameObject);
-            currentDagger = null;
-        }
 
         Ray aimRay = mainCam.ScreenPointToRay(Input.mousePosition);
         if (!aimPlane.Raycast(aimRay, out float enter))
@@ -167,6 +171,13 @@ public class PlayerBlinkController2D : MonoBehaviour
             return;
         direction.Normalize();
 
+        // 3. 무한 헬리콥터 체공 방지 로직 (공중 투척 시 하강 가속 부여)
+        if (isInAir && playerRb != null)
+        {
+            // 상승 중이더라도 강제로 아래로 떨어지게 하여 긴장감 유발
+            playerRb.linearVelocity = new Vector2(playerRb.linearVelocity.x, Mathf.Min(playerRb.linearVelocity.y, -2f));
+        }
+
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         Quaternion spawnRotation = Quaternion.Euler(0f, 0f, angle);
 
@@ -180,16 +191,17 @@ public class PlayerBlinkController2D : MonoBehaviour
         if (currentDagger != null)
         {
             currentDagger.Launch(firePosition, direction, weaponData);
+
+            // 4. 투척 성공 시 쿨타임 갱신
+            _lastThrowTime = Time.time;
         }
     }
-    private bool TryBlinkToDagger()
+    public bool TryBlinkToDagger()
     {
         if (currentDagger == null || !currentDagger.CanBlink)
             return false;
 
-        // 코요테 타임: 땅/벽을 막 벗어난 뒤 짧은 시간은 지상 판정처럼 취급
-        bool hasCoyoteGrace = (Time.time - _lastGroundedOrWallTime) <= GetCoyoteTime();
-        bool isInAir = !isGrounded && !isOnWall && !hasCoyoteGrace;
+        bool isInAir = IsAirborneForBlinkRules();
         if (isInAir && currentAirBlinkCount <= 0)
         {
             // 공중 블링크 횟수 초과
@@ -221,6 +233,8 @@ public class PlayerBlinkController2D : MonoBehaviour
         // 실제 위치 이동
         transform.position = finalPos;
 
+        ProcessBlinkEnemyInteractions(startPos, finalPos);
+
         // 블링크 경로 잔상 연출
         SpawnBlinkTrail(startPos, finalPos);
         CreateGhost(startPos, finalPos);
@@ -240,11 +254,104 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     #endregion
 
+    /// <summary>
+    /// 물리 접촉 벽(isOnWall)이 없어도 PlayerMovement2D 벽 타기는 벽으로 간주해 공중 블링크 소모를 막는다.
+    /// </summary>
+    private bool IsAirborneForBlinkRules()
+    {
+        bool hasCoyoteGrace = (Time.time - _lastGroundedOrWallTime) <= GetCoyoteTime();
+        bool onWallOrClimb = isOnWall || (playerMovement != null && playerMovement.IsWallClimbing);
+        return !isGrounded && !onWallOrClimb && !hasCoyoteGrace;
+    }
+
+    /// <summary>
+    /// 블링크 경로 스윕 + 도착 오버랩으로 적 타격. NonAlloc만 사용.
+    /// </summary>
+    private void ProcessBlinkEnemyInteractions(Vector2 from, Vector2 to)
+    {
+        if (weaponData == null || weaponData.blinkEnemyLayerMask.value == 0)
+            return;
+
+        int mask = weaponData.blinkEnemyLayerMask.value;
+        float sweepR = weaponData.blinkEnemySweepRadius;
+        float destR = weaponData.blinkDestinationEnemyRadius;
+
+        int processed = 0;
+        bool rewarded = false;
+
+        Vector2 delta = to - from;
+        float mag = delta.magnitude;
+        Vector2 dir = mag > 1e-5f ? delta / mag : Vector2.right;
+
+        int sweepCount = Physics2D.CircleCastNonAlloc(from, sweepR, dir, BlinkSweepHits, mag, mask);
+        for (int i = 0; i < sweepCount; i++)
+        {
+            Collider2D c = BlinkSweepHits[i].collider;
+            if (c == null) continue;
+            int id = c.gameObject.GetInstanceID();
+            if (!TryRegisterBlinkProcessed(id, ref processed)) continue;
+            ApplyBlinkHitToEnemy(c.gameObject, ref rewarded);
+        }
+
+        int overlapCount = Physics2D.OverlapCircleNonAlloc(to, destR, BlinkOverlapBuffer, mask);
+        for (int i = 0; i < overlapCount; i++)
+        {
+            Collider2D c = BlinkOverlapBuffer[i];
+            if (c == null) continue;
+            int id = c.gameObject.GetInstanceID();
+            if (!TryRegisterBlinkProcessed(id, ref processed)) continue;
+            ApplyBlinkHitToEnemy(c.gameObject, ref rewarded);
+        }
+    }
+
+    private bool TryRegisterBlinkProcessed(int instanceId, ref int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (BlinkProcessedInstanceIds[i] == instanceId)
+                return false;
+        }
+
+        if (count >= BlinkProcessedInstanceIds.Length)
+            return false;
+
+        BlinkProcessedInstanceIds[count++] = instanceId;
+        return true;
+    }
+
+    private void ApplyBlinkHitToEnemy(GameObject hitObject, ref bool rewarded)
+    {
+        if (weaponData == null) return;
+
+        var health = hitObject.GetComponentInParent<IHealth>();
+        if (health != null)
+        {
+            health.TakeDamage(weaponData.blinkExecutionDamage);
+            if (weaponData.blinkKillRefillsAirBlink && !rewarded)
+            {
+                ResetAirBlinkCount();
+                rewarded = true;
+            }
+
+            return;
+        }
+
+        if (!weaponData.blinkInstantKillDestroysEnemyWithoutHealth)
+            return;
+
+        if (weaponData.blinkKillRefillsAirBlink && !rewarded)
+        {
+            ResetAirBlinkCount();
+            rewarded = true;
+        }
+
+        Destroy(hitObject.transform.root.gameObject);
+    }
+
     #region Ground / Wall Check (무한 체공 방지)
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        Debug.Log("충돌: " + collision.gameObject.name + " / 레이어: " + LayerMask.LayerToName(collision.gameObject.layer));
         int layer = collision.gameObject.layer;
         int layerBit = 1 << layer;
         // Dagger layer 추가 -> 단검 충돌 무시

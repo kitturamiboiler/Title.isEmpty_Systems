@@ -12,10 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6523f90b6f42b4165982d28d3d43bb87, type: 3}
   m_Name: NewWeaponData
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  groundBoxCastDistance: 0.28
+  groundMinFloorNormalY: 0.35
+  groundFootCornerInset: 0.06
+  groundCheckVerticalLift: 0.02
+  daggerEmbedSurfaceMask:
+    serializedVersion: 2
+    m_Bits: 72
+  blinkEnemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  blinkEnemySweepRadius: 0.32
+  blinkDestinationEnemyRadius: 0.4
+  blinkInstantKillDestroysEnemyWithoutHealth: 1
+  blinkExecutionDamage: 500
+  blinkKillRefillsAirBlink: 1
   damage: 10
   projectileSpeed: 60
   blinkCooldown: 0.3
-  maxDistance: 20
+  maxDistance: 60
   coyoteTime: 0.1
   inputBufferTime: 0.1
   wallJumpHorizontalForce: 7

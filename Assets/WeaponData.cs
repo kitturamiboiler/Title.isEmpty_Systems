@@ -3,6 +3,35 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewWeaponData", menuName = "Game/Weapon Data")]
 public class WeaponData : ScriptableObject
 {
+    [Header("Player Ground Check (PlayerMovement2D)")]
+    [Tooltip("BoxCast 하단 거리. 캡슐/타일 두께에 맞게 조정.")]
+    public float groundBoxCastDistance = 0.28f;
+    [Range(0f, 1f)]
+    [Tooltip("바닥 법선 최소 Y. 낮출수록 경사·가장자리에서도 착지 인정.")]
+    public float groundMinFloorNormalY = 0.35f;
+    [Tooltip("발 모서리 보조 레이의 좌우 안쪽 여백.")]
+    public float groundFootCornerInset = 0.06f;
+    [Tooltip("BoxCast 시작점을 발보다 약간 위로 올려 콜라이더 내부 시작 문제 완화.")]
+    public float groundCheckVerticalLift = 0.02f;
+
+    [Header("Dagger Embed (DaggerProjectile2D)")]
+    [Tooltip("박혀 고정될 표면 레이어(Ground, Wall 등). 비어 있으면 이름 Wall/Ground로 폴백.")]
+    public LayerMask daggerEmbedSurfaceMask;
+
+    [Header("Blink Combat (PlayerBlinkController2D)")]
+    [Tooltip("블링크 경로/도착에서 체크할 적 레이어.")]
+    public LayerMask blinkEnemyLayerMask;
+    [Tooltip("이동 경로 스윕(원형 캐스트) 반경.")]
+    public float blinkEnemySweepRadius = 0.32f;
+    [Tooltip("도착 지점 추가 오버랩 반경.")]
+    public float blinkDestinationEnemyRadius = 0.4f;
+    [Tooltip("IHealth 없을 때 Destroy로 즉시 제거할지.")]
+    public bool blinkInstantKillDestroysEnemyWithoutHealth = true;
+    [Tooltip("블링크로 적에게 피해를 줄 때의 값(척살용 고정 데미지).")]
+    public float blinkExecutionDamage = 500f;
+    [Tooltip("블링크로 적 1체 이상 타격 시 공중 블링크 횟수를 max로 회복.")]
+    public bool blinkKillRefillsAirBlink = true;
+
     [Header("Dagger Stats")]
     public float damage = 10f;
     public float projectileSpeed = 20f; // 탄속 (단도 날아가는 속도)
