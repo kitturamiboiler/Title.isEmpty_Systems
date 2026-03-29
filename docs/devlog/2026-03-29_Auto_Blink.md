@@ -4,6 +4,11 @@
 - **무한 공중 투척 (Air-Blink Limit Removal):** 기존 공중 1회 제한 로직을 해제하고, `Time.time` 기반의 0.5초 쿨타임을 적용하여 사슬팔 스윙과 같은 연속적인 공중 기동성 확보.
 - **무한 헬리콥터 방어 (Anti-Helicopter):** 공중 무한 투척 허용 시 발생하는 제자리 체공 꼼수를 막기 위해, 투척 순간 플레이어의 `velocity.y`를 강제로 하강시켜 묵직한 조작감과 긴장감 부여.
 - **자동 블링크 (Auto-Retract):** 단검이 'Enemy' 레이어와 충돌 시, 플레이어가 Shift를 누르지 않아도 즉시 해당 위치로 플레이어를 당겨오는 `TryBlinkToDagger` 자동 호출 로직 구현. (편의성 및 속도감 극대화)
+- **3대 핵심 버그 해결:** - 지상 점프 불능(Grounded Check) 수치 조정으로 조작감 정상화.
+  - 단검 지면 미끄러짐(Friction) 현상 Rigidbody 제어로 해결.
+  - 벽 부착 중 블링크 발동 차단 로직 수정 완료.
+- **적 조준선(Line of Sight) 시스템:** `LineRenderer`를 활용하여 적과 플레이어 사이의 실시간 거리와 방향을 시각화하는 레이저 시스템 구축.
+- **UI 실험:** 텍스트 기반 인디케이터("나 여깄어!") 구현 후 시각적 노이즈 판정으로 비활성화 처리.
 
 ## 2. 물리 엔진 버그 픽스 (Physics Fix) 🛡️
 - **포물선 비행 버그:** `RigidbodyType2D.Dynamic` 상태에서 유니티 기본 중력에 의해 단검이 포물선으로 떨어지는 현상 발생.
@@ -12,5 +17,11 @@
 ## 3. 트러블 슈팅 (Trouble Shooting) 🔧
 - Player/Dagger 스크립트를 연결하고 접근 제어자(`public`)를 수정하여 기능 이식 완료.
 
-## 4. 다음 목표 (Next Milestone) 🎯
-- **유도 단검 (Magnetic Aim Assist):** 조준선 30도 이내의 적을 향해 단검 비행 궤적이 자동으로 부드럽게 꺾이는(Lerp) 찰나의 보정 시스템 구현 예정.
+## 조준선(Line of Sight) 시스템 도입
+### 2. 기술적 습득 & 방어 (Anti-Bug) 🛡️
+- **Asset vs Instance:** 유니티의 Project 창(창고)과 Hierarchy 창(무대)의 구조적 차이를 명확히 이해하고 Material 적용 방식 숙달.
+- **Shader & Material:** `Unlit/Transparent`와 `Sprites/Default` 쉐이더의 특성 및 텍스처 타일링(Tiling)을 통한 비주얼 제어 기초 확립.
+
+### 3. 미해결 과제 (To-do) 🎯
+- **점선 비주얼 업데이트:** 빨간색+투명 영역이 포함된 스프라이트를 제작하여 실선을 점선(`----`)으로 교체 예정.
+- **유도 단검(Magnetic Aim) 보류:** 플레이어의 100% 수동 컨트롤 재미를 위해 기획적 제외 결정.
