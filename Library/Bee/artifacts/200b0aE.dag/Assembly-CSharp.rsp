@@ -401,6 +401,7 @@
 "Assets/CameraFollow.cs"
 "Assets/Dagger/DaggerProjectile2D.cs"
 "Assets/Dagger/ProjectileBase.cs"
+"Assets/EnemyLineOfSight2D.cs"
 "Assets/Interface/IHealth.cs"
 "Assets/Interface/IProjectile.cs"
 "Assets/Manager/EffectManager.cs"
