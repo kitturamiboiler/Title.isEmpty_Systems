@@ -3,17 +3,19 @@ using UnityEngine;
 /// <summary>
 /// 2D 단검 투사체. 플레이어 블링크의 기준 위치가 되는 오브젝트.
 /// - 거리 제한
-/// - 벽/적 충돌 시 정보 저장
+/// - 벽/바닥/적 충돌 시 정보 저장 및 고정(Embed)
 /// </summary>
 public class DaggerProjectile2D : MonoBehaviour
 {
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private WeaponData weaponData;
     [SerializeField] private TrailRenderer trailRenderer;
+    [SerializeField] private Collider2D daggerCollider;
 
     private Vector2 launchPosition;
     private bool isLaunched;
     private bool canBlink = true;
+    private bool _embedded;
 
     // 벽에 박혔을 때 사용되는 정보
     public bool IsStuckToWall { get; private set; }
@@ -32,11 +34,17 @@ public class DaggerProjectile2D : MonoBehaviour
 
         if (trailRenderer == null)
             trailRenderer = GetComponent<TrailRenderer>();
+
+        if (daggerCollider == null)
+            daggerCollider = GetComponent<Collider2D>();
     }
 
     public void Launch(Vector2 origin, Vector2 direction, WeaponData data)
     {
         weaponData = data;
+        if (weaponData == null)
+            return;
+
         launchPosition = origin;
         transform.position = origin;
 
@@ -44,9 +52,16 @@ public class DaggerProjectile2D : MonoBehaviour
         canBlink = true;
         IsStuckToWall = false;
         HitEnemy = false;
+        _embedded = false;
+
+        if (daggerCollider != null)
+            daggerCollider.enabled = true;
 
         if (rb != null)
         {
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            // [버그 픽스] 중력을 0으로 만들어 포물선 비행을 방지하고 레이저처럼 직진하게 만듭니다.
+            rb.gravityScale = 0f;
             rb.linearVelocity = direction.normalized * weaponData.projectileSpeed;
         }
 
@@ -57,7 +72,6 @@ public class DaggerProjectile2D : MonoBehaviour
             trailRenderer.emitting = true;
         }
     }
-
     private void Update()
     {
         if (!isLaunched || weaponData == null) return;
@@ -65,7 +79,6 @@ public class DaggerProjectile2D : MonoBehaviour
         float distance = Vector2.Distance(launchPosition, transform.position);
         if (distance > weaponData.maxDistance)
         {
-            // 거리 초과: 블링크 권한 상실 및 즉시 회수
             canBlink = false;
             Destroy(gameObject);
         }
@@ -73,60 +86,91 @@ public class DaggerProjectile2D : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!isLaunched) return;
+        if (!isLaunched || _embedded) return;
 
-        // 첫 번째 접촉 지점 기준으로 Normal 저장
         if (collision.contactCount > 0)
-        {
             LastHitNormal = collision.GetContact(0).normal;
-        }
 
-        // 레이어 이름으로 벽/적 등을 구분 (프로젝트 설정에 따라 수정 가능)
-        string layerName = LayerMask.LayerToName(collision.gameObject.layer);
+        int layer = collision.gameObject.layer;
 
-        if (layerName == "Wall")
-        {
-            IsStuckToWall = true;
-
-            // 벽에 "박힌" 느낌을 위해 속도를 0으로
-            if (rb != null)
-            {
-                rb.linearVelocity = Vector2.zero;
-                rb.isKinematic = true;
-            }
-        }
-        else if (layerName == "Enemy")
+        // 1. 적(Enemy)에게 맞았을 때
+        if (IsEnemyLayer(layer))
         {
             HitEnemy = true;
-
-            // 여기서 적의 체력 컴포넌트가 있다면 데미지 처리
-            var health = collision.gameObject.GetComponent<IHealth>();
+            var health = collision.gameObject.GetComponentInParent<IHealth>();
             if (health != null && weaponData != null)
-            {
                 health.TakeDamage(weaponData.damage);
-            }
 
-            // 적에게 박혀 있는 연출을 원하면 속도 0, 아니면 그대로 둬도 됨
-            if (rb != null)
+            EmbedIntoSurface(collision);
+            SpawnHitFx(collision);
+
+            // [추가] 적중 시 플레이어를 즉시 당겨오는 '자동 블링크' 로직
+            var blinkCtrl = Object.FindFirstObjectByType<PlayerBlinkController2D>();
+            if (blinkCtrl != null)
             {
-                rb.linearVelocity = Vector2.zero;
-                rb.isKinematic = true;
+                // 주의: PlayerBlinkController2D에 이 동작을 실행하는 public 함수 이름을 맞춰주세요.
+                // (예: ExecuteBlink, TryBlinkToDagger 등 현재 사용 중인 블링크 실행 함수명)
+                blinkCtrl.TryBlinkToDagger();
             }
-        }
-        else
-        {
-            // 기타 충돌(바닥 등)도 필요하다면 여기서 처리
+            return;
         }
 
-        // 피격 이펙트
-        if (weaponData != null && weaponData.hitParticle != null)
+        // 2. 벽/바닥(Wall/Ground)에 맞았을 때
+        if (IsEmbedSurfaceLayer(layer))
         {
-            EffectManager.Instance?.SpawnEffect(
-                weaponData.hitParticle,
-                collision.GetContact(0).point,
-                LastHitNormal
-            );
+            IsStuckToWall = true;
+            EmbedIntoSurface(collision);
+            SpawnHitFx(collision);
+            return;
         }
+
+        if (weaponData != null && weaponData.hitParticle != null)
+            SpawnHitFx(collision);
+    }
+
+    private bool IsEnemyLayer(int layer)
+    {
+        string layerName = LayerMask.LayerToName(layer);
+        return layerName == "Enemy";
+    }
+
+    private bool IsEmbedSurfaceLayer(int layer)
+    {
+        if (weaponData != null && weaponData.daggerEmbedSurfaceMask.value != 0)
+            return (weaponData.daggerEmbedSurfaceMask.value & (1 << layer)) != 0;
+
+        string n = LayerMask.LayerToName(layer);
+        return n == "Wall" || n == "Ground";
+    }
+
+    private void EmbedIntoSurface(Collision2D collision)
+    {
+        _embedded = true;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+        }
+
+        if (daggerCollider != null)
+            daggerCollider.enabled = false;
+
+        if (trailRenderer != null)
+            trailRenderer.emitting = false;
+    }
+
+    private void SpawnHitFx(Collision2D collision)
+    {
+        if (weaponData == null || weaponData.hitParticle == null)
+            return;
+        if (collision.contactCount <= 0)
+            return;
+
+        EffectManager.Instance?.SpawnEffect(
+            weaponData.hitParticle,
+            collision.GetContact(0).point,
+            LastHitNormal
+        );
     }
 }
-
