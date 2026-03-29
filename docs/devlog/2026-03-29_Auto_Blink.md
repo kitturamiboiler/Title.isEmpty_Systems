@@ -10,7 +10,7 @@
 - **해결 방안:** 단검 발사(`Launch`) 시점점 `rb.gravityScale = 0f;`를 강제 주입하여 레이저처럼 직진하는 투사체 궤적 완벽 구현.
 
 ## 3. 트러블 슈팅 (Trouble Shooting) 🔧
-- 결제 모듈(Stripe) 이상거래 차단 등 외부 인프라 이슈로 자동화 AI 지원이 끊긴 상황에서, 수동으로 Player/Dagger 스크립트를 연결하고 접근 제어자(`public`)를 수정하여 기능 이식 완료.
+- Player/Dagger 스크립트를 연결하고 접근 제어자(`public`)를 수정하여 기능 이식 완료.
 
 ## 4. 다음 목표 (Next Milestone) 🎯
 - **유도 단검 (Magnetic Aim Assist):** 조준선 30도 이내의 적을 향해 단검 비행 궤적이 자동으로 부드럽게 꺾이는(Lerp) 찰나의 보정 시스템 구현 예정.
