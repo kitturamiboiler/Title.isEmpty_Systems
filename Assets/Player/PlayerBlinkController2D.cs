@@ -196,6 +196,12 @@ public class PlayerBlinkController2D : MonoBehaviour
             _lastThrowTime = Time.time;
         }
     }
+    /// <summary>
+    /// DaggerProjectile2D 적중 등 외부 트리거로 즉시 블링크를 실행한다.
+    /// 공중 블링크 소모·코요테 규칙을 모두 준수한다.
+    /// </summary>
+    public bool ImmediateBlink() => TryBlinkToDagger();
+
     public bool TryBlinkToDagger()
     {
         if (currentDagger == null || !currentDagger.CanBlink)
@@ -355,7 +361,7 @@ public class PlayerBlinkController2D : MonoBehaviour
         int layer = collision.gameObject.layer;
         int layerBit = 1 << layer;
         // Dagger layer 추가 -> 단검 충돌 무시
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Dagger")) return;
+        if (collision.gameObject.layer == Layers.Dagger) return;
 
         // OnCollisionEnter2D + LayerMask를 사용해 지면/벽 판정
         if ((groundMask.value & layerBit) != 0)

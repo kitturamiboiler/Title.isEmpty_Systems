@@ -1,92 +1,94 @@
 using UnityEngine;
 
 /// <summary>
-/// 모든 투척 무기가 공통으로 사용할 기본 투사체 베이스.
-/// 단검 전용 기본 로직을 포함하되, 상속으로 쉽게 확장 가능하도록 설계.
+/// 순수 2D 투사체 공통 베이스. <see cref="IProjectile2D"/> 계약 준수.
+/// 이전의 3D 기반 ProjectileBase (Rigidbody, RaycastHit)를 완전히 대체한다.
 /// </summary>
-public abstract class ProjectileBase : MonoBehaviour, IProjectile
+[RequireComponent(typeof(Rigidbody2D))]
+public abstract class ProjectileBase2D : MonoBehaviour, IProjectile2D
 {
+    [Header("Base Refs (ProjectileBase2D)")]
     [SerializeField] protected WeaponData weaponData;
-    [SerializeField] protected Rigidbody rb;
+    [SerializeField] protected Rigidbody2D rb;
 
-    protected Vector3 launchDirection;
-    protected bool isLaunched;
+    protected Vector2 LaunchOrigin { get; private set; }
+    protected Vector2 LaunchDirection { get; private set; }
+    protected bool IsLaunched { get; private set; }
 
     protected virtual void Awake()
     {
         if (rb == null)
-        {
-            rb = GetComponent<Rigidbody>();
-        }
+            rb = GetComponent<Rigidbody2D>();
     }
 
-    public virtual void Launch(Vector3 origin, Vector3 direction, WeaponData data)
+    /// <inheritdoc/>
+    public virtual void Launch(Vector2 origin, Vector2 direction, WeaponData data)
     {
-        weaponData = data;
-        launchDirection = direction.normalized;
-        transform.position = origin;
-
-        isLaunched = true;
-
-        if (rb != null)
+        if (data == null)
         {
-            rb.linearVelocity = launchDirection * weaponData.projectileSpeed;
+            Debug.LogError($"[{nameof(Launch)}] WeaponData is null on {gameObject.name}. 발사를 중단합니다.");
+            return;
         }
+
+        weaponData = data;
+        LaunchOrigin = origin;
+        LaunchDirection = direction.normalized;
+        transform.position = origin;
+        IsLaunched = true;
+
+        if (rb == null)
+        {
+            Debug.LogError($"[{nameof(Launch)}] Rigidbody2D missing on {gameObject.name}.");
+            return;
+        }
+
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        rb.gravityScale = 0f;
+        rb.linearVelocity = LaunchDirection * weaponData.projectileSpeed;
 
         OnLaunched();
     }
 
-    /// <summary>
-    /// 발사 직후 한 번 호출되는 훅. 각 무기별 커스텀 초기화에 사용.
-    /// </summary>
+    /// <inheritdoc/>
+    public virtual void OnHit(Collision2D collision)
+    {
+        if (collision == null) return;
+
+        Vector2 normal = collision.contactCount > 0
+            ? (Vector2)collision.GetContact(0).normal
+            : Vector2.up;
+
+        HandleDamage(collision);
+        PlayHitEffect((Vector2)collision.GetContact(0).point, normal);
+    }
+
+    /// <inheritdoc/>
+    public virtual bool CanBlink => false;
+
+    /// <inheritdoc/>
+    public virtual Vector2 CurrentPosition => transform.position;
+
+    /// <summary>발사 직후 한 번 호출되는 훅. 서브클래스 커스텀 초기화 용도.</summary>
     protected virtual void OnLaunched() { }
 
-    public virtual void OnHit(RaycastHit hit)
+    /// <summary>충돌 대상에게 데미지를 적용한다. 서브클래스에서 override 가능.</summary>
+    protected virtual void HandleDamage(Collision2D collision)
     {
-        HandleDamage(hit);
-        PlayHitEffect(hit.point, hit.normal);
+        if (weaponData == null) return;
+
+        var health = collision.gameObject.GetComponentInParent<IHealth>();
+        if (health == null) return;
+
+        health.TakeDamage(weaponData.damage);
     }
 
     /// <summary>
-    /// 충돌 대상에게 데미지를 적용하는 기본 단검 로직.
-    /// 나중에 다른 무기는 이 메서드를 override 해서 커스텀 가능.
+    /// 충돌 지점에 이펙트를 재생한다. EffectManager가 수명을 책임진다.
     /// </summary>
-    protected virtual void HandleDamage(RaycastHit hit)
+    protected virtual void PlayHitEffect(Vector2 position, Vector2 normal)
     {
-        var health = hit.collider.GetComponent<IHealth>();
-        if (health != null && weaponData != null)
-        {
-            health.TakeDamage(weaponData.damage);
-        }
+        if (weaponData == null || weaponData.hitParticle == null) return;
+
+        EffectManager.Instance?.SpawnEffect(weaponData.hitParticle, position, normal);
     }
-
-    /// <summary>
-    /// 피격 이펙트 재생. Sprite / Particle 은 WeaponData 에서 참조.
-    /// </summary>
-    protected virtual void PlayHitEffect(Vector3 position, Vector3 normal)
-    {
-        if (weaponData != null && weaponData.hitParticle != null)
-        {
-            ParticleSystem ps = Instantiate(weaponData.hitParticle, position, Quaternion.LookRotation(normal));
-            ps.Play();
-        }
-    }
-
-    /// <summary>
-    /// 단검 블링크 기본 로직:
-    /// 플레이어(또는 캐릭터)를 현재 투사체 위치로 이동.
-    /// </summary>
-    public virtual void BlinkTo(Transform targetTransform)
-    {
-        if (targetTransform == null) return;
-
-        targetTransform.position = transform.position;
-        OnBlink(targetTransform);
-    }
-
-    /// <summary>
-    /// 블링크 후 각 무기별 추가 처리용 훅.
-    /// </summary>
-    protected virtual void OnBlink(Transform targetTransform) { }
 }
-
