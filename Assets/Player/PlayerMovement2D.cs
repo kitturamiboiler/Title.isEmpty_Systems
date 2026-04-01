@@ -19,6 +19,8 @@ public class PlayerMovement2D : MonoBehaviour
     [SerializeField] private Collider2D bodyCollider;
     [SerializeField] private PlayerBlinkController2D blinkController;
     [SerializeField] private WeaponData weaponData;
+    [Tooltip("SlamState 진행 중 수평 이동 간섭 차단용. 같은 GameObject에 부착된 PlayerStateMachine.")]
+    [SerializeField] private PlayerStateMachine _stateMachine;
 
     [Header("Move")]
     [SerializeField] private float moveSpeed = 8f;
@@ -96,6 +98,8 @@ public class PlayerMovement2D : MonoBehaviour
             bodyCollider = GetComponent<Collider2D>();
         if (blinkController == null)
             blinkController = GetComponent<PlayerBlinkController2D>();
+        if (_stateMachine == null)
+            _stateMachine = GetComponent<PlayerStateMachine>();
 
         _defaultGravityScale = rb.gravityScale;
     }
@@ -112,6 +116,17 @@ public class PlayerMovement2D : MonoBehaviour
     private void FixedUpdate()
     {
         if (blinkController != null && blinkController.IsHitStopBlockingMovement)
+        {
+            if (_wasWallClimbing)
+                RestoreGravityScale();
+            _wasWallClimbing = false;
+            _currentPhase = MovementPhase.Air;
+            return;
+        }
+
+        // SlamState 진행 중 수평 이동·중력 간섭 차단 (SE-1 방어)
+        // TODO(작성자): IMovementBlockingState 인터페이스 도입으로 SlamState 직접 참조 제거 권장 — 날짜
+        if (_stateMachine != null && _stateMachine.CurrentState is SlamState)
         {
             if (_wasWallClimbing)
                 RestoreGravityScale();
@@ -163,6 +178,10 @@ public class PlayerMovement2D : MonoBehaviour
     private void LateUpdate()
     {
         if (blinkController != null && blinkController.IsHitStopBlockingMovement)
+            return;
+
+        // Slam 중 스프라이트 플립 억제
+        if (_stateMachine != null && _stateMachine.CurrentState is SlamState)
             return;
 
         if (Time.time - (blinkController != null ? blinkController.LastAttackFlipGameTime : -999f)
