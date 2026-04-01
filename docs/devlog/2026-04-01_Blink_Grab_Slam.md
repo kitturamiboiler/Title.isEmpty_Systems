@@ -1,9 +1,6 @@
 # 2026-04-01 데브로그: FSM 전투입력, Boss FrameWork
 
-# ⚡ Project — Blink·Grab·Slam Combat Framework
-
-> '산나비' 스타일 고속 기동을 재해석한 2D 액션 전투 시스템  
-> **Engine**: Unity 2022.3 LTS · **Language**: C# (OOP / SOLID / Interface-Driven) · **Tools**: Cursor AI, Git
+# Project — Blink·Grab·Slam Combat Framework
 
 ---
 
