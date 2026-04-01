@@ -6,3 +6,5 @@
 * [📅 2026-03-29: 산나비식 기동성 개편 및 자동 블링크 도입](./docs/devlog/2026-03-29_Auto_Blink.md)
 
 * [📅 2026-03-31: 코드 리팩토링](./docs/devlog/2026-03-31_Code_Repactoring.md)
+
+* [📅 2026-03-31: 코드 리팩토링 2](./docs/devlog/2026-04-01_Code_Repactoring2.md)
