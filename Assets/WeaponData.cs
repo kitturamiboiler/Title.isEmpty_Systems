@@ -81,6 +81,20 @@ public class WeaponData : ScriptableObject
     public float cameraShakeDuration = 0.06f; // 카메라 앵글 흔들림 지속
     public float cameraShakeIntensity = 0.08f; // 카메라 애글 흔들림
 
+    [Header("Slam (SlamState)")]
+    [Tooltip("급강하 속도. 음수로 지정. 절대값이 클수록 빠른 하강.")]
+    public float slamVerticalVelocity = -30f;
+    [Tooltip("blinkEnemyLayerMask와 독립된 슬램 범위 데미지 대상 레이어.")]
+    public LayerMask slamEnemyLayerMask;
+    [Tooltip("BoxCast 예측 거리 추가 여유값. 얇은 플랫폼 대비 완충재.")]
+    public float slamCastMargin = 0.1f;
+    [Tooltip("그랩 후 입력 없을 때 자동 슬램 발동까지 대기 시간(초).")]
+    public float slamAutoTriggerTime = 0.3f;
+    [Tooltip("슬램 착지 시 데미지. 1.0 = Lives 1 감소.")]
+    public float slamDamage = 1.0f;
+    [Tooltip("착지 충격파 범위(유닛). 주변 적 범위 데미지 반경.")]
+    public float slamRadius = 2.5f;
+
     [Header("Prefabs")]
     public GameObject daggerProjectilePrefab; // 2D 단검 투사체 프리팹
 }

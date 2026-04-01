@@ -28,6 +28,9 @@ public class PlayerBlinkController2D : MonoBehaviour
     [Tooltip("블링크 잔상 LineRenderer용 머티리얼. 비워두면 Awake에서 Sprites/Default로 자동 생성.")]
     [SerializeField] private Material _blinkTrailMaterial;
 
+    /// <summary>Grab 전이 연결용. 같은 GameObject의 PlayerStateMachine을 Awake에서 캐싱.</summary>
+    private PlayerStateMachine _stateMachine;
+
     private bool isGrounded;
     private bool isOnWall;
 
@@ -77,6 +80,7 @@ public class PlayerBlinkController2D : MonoBehaviour
 
         mainCam = Camera.main;
         ResetAirBlinkCount();
+        _stateMachine = GetComponent<PlayerStateMachine>();
 
         if (_blinkTrailMaterial == null)
         {
@@ -111,9 +115,22 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     private void Update()
     {
+        // GrabState · SlamState 진행 중 단검 투척·블링크 입력 차단
+        // 자기전이(Grab→Grab) 및 Slam 도중 2차 블링크 오발사 방지
+        if (IsGrabOrSlamActive())
+            return;
+
         HandleThrowInput();
         HandleBlinkInput();
         HandleJumpBufferInput();
+    }
+
+    /// <summary>FSM이 Grab 또는 Slam 상태이면 true.</summary>
+    private bool IsGrabOrSlamActive()
+    {
+        if (_stateMachine == null) return false;
+        return _stateMachine.CurrentState is GrabState
+               || _stateMachine.CurrentState is SlamState;
     }
 
     #region Input
@@ -313,7 +330,7 @@ public class PlayerBlinkController2D : MonoBehaviour
             if (c == null) continue;
             int id = c.gameObject.GetInstanceID();
             if (!TryRegisterBlinkProcessed(id, ref processed)) continue;
-            ApplyBlinkHitToEnemy(c.gameObject, ref rewarded);
+            if (ApplyBlinkHitToEnemy(c.gameObject, ref rewarded)) return; // Grab 트리거 시 즉시 중단
         }
 
         int overlapCount = Physics2D.OverlapCircleNonAlloc(to, destR, BlinkOverlapBuffer, mask);
@@ -323,7 +340,7 @@ public class PlayerBlinkController2D : MonoBehaviour
             if (c == null) continue;
             int id = c.gameObject.GetInstanceID();
             if (!TryRegisterBlinkProcessed(id, ref processed)) continue;
-            ApplyBlinkHitToEnemy(c.gameObject, ref rewarded);
+            if (ApplyBlinkHitToEnemy(c.gameObject, ref rewarded)) return; // Grab 트리거 시 즉시 중단
         }
     }
 
@@ -342,10 +359,37 @@ public class PlayerBlinkController2D : MonoBehaviour
         return true;
     }
 
-    private void ApplyBlinkHitToEnemy(GameObject hitObject, ref bool rewarded)
+    /// <returns>true = Grab 트리거 완료 (이후 루프 즉시 중단). false = 일반 처형 처리.</returns>
+    private bool ApplyBlinkHitToEnemy(GameObject hitObject, ref bool rewarded)
     {
-        if (weaponData == null) return;
+        if (weaponData == null) return false;
 
+        // ── Grab 분기 ────────────────────────────────────────────────────────
+        // IsGrabbable: Lives == 1 && !isDead && !isLockedForGrab
+        var enemyHealth = hitObject.GetComponentInParent<EnemyHealth>();
+        if (enemyHealth != null && enemyHealth.IsGrabbable)
+        {
+            if (_stateMachine == null)
+            {
+                Debug.LogWarning("[PlayerBlinkController2D] PlayerStateMachine 캐시가 없어 Grab 전이 불가. 처형으로 대체.");
+            }
+            else
+            {
+                _stateMachine.Grab.SetTarget(enemyHealth);
+                _stateMachine.ChangeState(_stateMachine.Grab);
+
+                // 그랩 성공도 공중 블링크 회복 보상 부여
+                if (weaponData.blinkKillRefillsAirBlink && !rewarded)
+                {
+                    ResetAirBlinkCount();
+                    rewarded = true;
+                }
+
+                return true; // 루프 조기 종료 신호
+            }
+        }
+
+        // ── 일반 처형 분기 ────────────────────────────────────────────────────
         var health = hitObject.GetComponentInParent<IHealth>();
         if (health != null)
         {
@@ -356,11 +400,11 @@ public class PlayerBlinkController2D : MonoBehaviour
                 rewarded = true;
             }
 
-            return;
+            return false;
         }
 
         if (!weaponData.blinkInstantKillDestroysEnemyWithoutHealth)
-            return;
+            return false;
 
         if (weaponData.blinkKillRefillsAirBlink && !rewarded)
         {
@@ -369,6 +413,7 @@ public class PlayerBlinkController2D : MonoBehaviour
         }
 
         Destroy(hitObject.transform.root.gameObject);
+        return false;
     }
 
     #region Ground / Wall Check (무한 체공 방지)
@@ -715,40 +760,5 @@ public class PlayerBlinkController2D : MonoBehaviour
     }
 
     #endregion
-}
-
-internal sealed class GhostFade : MonoBehaviour
-{
-    private SpriteRenderer _renderer;
-    private float _duration;
-    private float _elapsed;
-    private Color _baseColor;
-
-    public void Initialize(SpriteRenderer renderer, float duration)
-    {
-        _renderer = renderer;
-        _duration = Mathf.Max(0.01f, duration);
-        _baseColor = _renderer != null ? _renderer.color : Color.white;
-    }
-
-    private void Update()
-    {
-        if (_renderer == null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        _elapsed += Time.deltaTime;
-        float t = Mathf.Clamp01(_elapsed / _duration);
-        Color c = _baseColor;
-        c.a = Mathf.Lerp(_baseColor.a, 0f, t);
-        _renderer.color = c;
-
-        if (_elapsed >= _duration)
-        {
-            Destroy(gameObject);
-        }
-    }
 }
 

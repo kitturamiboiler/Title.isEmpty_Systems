@@ -1,0 +1,99 @@
+using UnityEngine;
+
+/// <summary>
+/// 플레이어 FSM 허브.
+/// - Awake: 모든 State를 생성하고 의존성을 주입한다.
+/// - ChangeState: 유일한 상태 전이 진입점.
+///
+/// 주의: PlayerBlinkController2D · PlayerMovement2D 가 독립 Update/FixedUpdate를 가지므로
+/// 현재는 FSM과 기존 컨트롤러가 병렬 동작한다.
+/// TODO(작성자): 입력 처리를 각 State로 이관 후 기존 컨트롤러 Update 제거 — 날짜
+/// </summary>
+public class PlayerStateMachine : MonoBehaviour
+{
+    [Header("Refs")]
+    [Tooltip("SlamState BoxCast 레이어. PlayerMovement2D.groundMask와 동일 레이어로 설정.")]
+    [SerializeField] private LayerMask _groundMask;
+    [SerializeField] private WeaponData _weaponData;
+
+    // -------------------------------------------------------------------------
+    // State 접근자 (GrabState.SetTarget 등 외부 호출용)
+    // -------------------------------------------------------------------------
+
+    /// <summary>대기 상태.</summary>
+    public IdleState  Idle  { get; private set; }
+
+    /// <summary>이동 상태.</summary>
+    public RunState   Run   { get; private set; }
+
+    /// <summary>블링크 상태.</summary>
+    public BlinkState Blink { get; private set; }
+
+    /// <summary>그랩 상태. 진입 전 Grab.SetTarget(enemy) 호출 필수.</summary>
+    public GrabState  Grab  { get; private set; }
+
+    /// <summary>슬램 상태.</summary>
+    public SlamState  Slam  { get; private set; }
+
+    /// <summary>현재 활성 State. 외부에서 직접 교체 금지.</summary>
+    public IState2D CurrentState { get; private set; }
+
+    private void Awake()
+    {
+        var rb        = GetComponent<Rigidbody2D>();
+        var col       = GetComponent<Collider2D>();
+        var blinkCtrl = GetComponent<PlayerBlinkController2D>();
+
+        if (rb == null)
+            Debug.LogError($"[PlayerStateMachine] Rigidbody2D가 없습니다 — {gameObject.name}");
+        if (col == null)
+            Debug.LogError($"[PlayerStateMachine] Collider2D가 없습니다 — {gameObject.name}");
+        if (_weaponData == null)
+            Debug.LogError($"[PlayerStateMachine] WeaponData가 할당되지 않았습니다 — {gameObject.name}");
+        if (blinkCtrl == null)
+            Debug.LogWarning($"[PlayerStateMachine] PlayerBlinkController2D가 없습니다 — {gameObject.name}");
+
+        // 의존 순서: Idle 먼저 생성(SlamState가 참조) → Slam → Grab
+        Idle  = new IdleState(this);
+        Run   = new RunState(this);
+        Blink = new BlinkState(this);
+        Slam  = new SlamState(this, rb, col, _weaponData, _groundMask, blinkCtrl, Idle);
+        Grab  = new GrabState(this, Slam, _weaponData);
+    }
+
+    private void Start()
+    {
+        ChangeState(Idle);
+    }
+
+    // -------------------------------------------------------------------------
+    // FSM 핵심
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// 상태를 전환한다. 현재 State의 Exit → 새 State의 Enter 순서를 보장.
+    /// </summary>
+    /// <param name="newState">전환할 State. null이면 LogError 후 무시.</param>
+    public void ChangeState(IState2D newState)
+    {
+        if (newState == null)
+        {
+            Debug.LogError("[PlayerStateMachine] ChangeState: newState가 null입니다. 전이를 중단합니다.");
+            return;
+        }
+
+        CurrentState?.Exit();
+        CurrentState = newState;
+        CurrentState.Enter();
+    }
+
+    private void Update()
+    {
+        CurrentState?.Tick();
+    }
+
+    private void FixedUpdate()
+    {
+        CurrentState?.FixedTick();
+    }
+}
