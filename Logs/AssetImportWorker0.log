@@ -7,9 +7,9 @@ Darwin version:          25.3.0
 Architecture:            arm64
 Running under Rosetta:   NO
 Available memory:        16384 MB
-Date:                    2026-03-31T03:05:09Z
+Date:                    2026-04-01T00:39:39Z
 [Licensing::Module] Trying to connect to existing licensing client channel...
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chosun-nhn13" at "2026-03-31T03:05:09.224622Z"
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chosun-nhn13" at "2026-04-01T00:39:39.283128Z"
 
 COMMAND LINE ARGUMENTS:
 /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/MacOS/Unity
@@ -23,7 +23,7 @@ AssetImportWorker0
 -logFile
 Logs/AssetImportWorker0.log
 -srvPort
-52352
+58458
 -licensingIpc
 LicenseClient-chosun-nhn13
 -job-worker-count
@@ -72,11 +72,11 @@ Successfully changed project path to: /Users/chosun-nhn13/Desktop/KnifeSystem_Un
     "memorysetup-temp-allocator-size-gfx=262144"
 Player connection [8432758912]  Target information:
 
-Player connection [8432758912]  * "[IP] 172.25.148.80 [Port] 0 [Flags] 2 [Guid] 3966974515 [EditorId] 3966974515 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+Player connection [8432758912]  * "[IP] 172.25.148.80 [Port] 0 [Flags] 2 [Guid] 755522501 [EditorId] 755522501 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
 
-Player connection [8432758912]  * "[IP] 192.168.139.3 [Port] 0 [Flags] 2 [Guid] 3966974515 [EditorId] 3966974515 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+Player connection [8432758912]  * "[IP] 192.168.139.3 [Port] 0 [Flags] 2 [Guid] 755522501 [EditorId] 755522501 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
 
-Player connection [8432758912]  * "[IP] 192.168.97.0 [Port] 0 [Flags] 2 [Guid] 3966974515 [EditorId] 3966974515 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+Player connection [8432758912]  * "[IP] 192.168.97.0 [Port] 0 [Flags] 2 [Guid] 755522501 [EditorId] 755522501 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
 
 Player connection [8432758912] Host joined multi-casting on [225.0.0.222:54997]...
 Player connection [8432758912] Host joined alternative multi-casting on [225.0.0.222:34997]...
@@ -112,44 +112,53 @@ Initialize mono
 Mono path[0] = '/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/Managed'
 Mono path[1] = '/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/lib/mono/unityjit-macos'
 Mono config path = '/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56252
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56614
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
 Register platform support module: /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.OSXStandalone.Extensions.dll
-Registered in 0.000365 seconds.
-- Loaded All Assemblies, in  0.256 seconds
+Registered in 0.000730 seconds.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.17.4+4293ba1
+  Session Id:              7deea38184ee4b3f8de9f3f149d36187
+  Correlation Id:          142e08653fb65768dc8568d36d625696
+  External correlation Id: 5554627860909573652
+  Machine Id:              CtFqJIMv80U5AEEBw5HyQBEPb58=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-chosun-nhn13" (connect: 0.00s, validation: 0.00s, handshake: 0.97s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chosun-nhn13-notifications" at "2026-04-01T00:39:40.250277Z"
+[Licensing::Module] Licensing Background thread has ended after 0.97s
+- Loaded All Assemblies, in  0.378 seconds
 Native extension for OSXStandalone target not found
 ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.273 seconds
-Domain Reload Profiling: 529ms
-	BeginReloadAssembly (71ms)
+- Finished resetting the current domain, in  0.306 seconds
+Domain Reload Profiling: 684ms
+	BeginReloadAssembly (163ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (0ms)
-	RebuildCommonClasses (26ms)
+	RebuildCommonClasses (35ms)
 	RebuildNativeTypeToScriptingClass (11ms)
-	initialDomainReloadingComplete (28ms)
-	LoadAllAssembliesAndSetupDomain (120ms)
-		LoadAssemblies (70ms)
+	initialDomainReloadingComplete (30ms)
+	LoadAllAssembliesAndSetupDomain (137ms)
+		LoadAssemblies (163ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (119ms)
-			TypeCache.Refresh (117ms)
-				TypeCache.ScanAssembly (105ms)
+		AnalyzeDomain (135ms)
+			TypeCache.Refresh (133ms)
+				TypeCache.ScanAssembly (120ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (273ms)
+	FinalizeReload (306ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (247ms)
+		SetupLoadedEditorAssemblies (279ms)
 			LogAssemblyErrors (0ms)
 			InitializePlatformSupportModulesInManaged (30ms)
 			SetLoadedEditorAssemblies (4ms)
-			BeforeProcessingInitializeOnLoad (62ms)
-			ProcessInitializeOnLoadAttributes (102ms)
-			ProcessInitializeOnLoadMethodAttributes (50ms)
+			BeforeProcessingInitializeOnLoad (66ms)
+			ProcessInitializeOnLoadAttributes (116ms)
+			ProcessInitializeOnLoadMethodAttributes (63ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -159,175 +168,12 @@ Domain Reload Profiling: 529ms
 Worker process is ready to serve import requests
 Import Worker Mode flag is 0x00
 Begin MonoManager ReloadAssembly
-[Licensing::Module] Licensing is not yet initialized.
-[Licensing::Client] Handshaking with LicensingClient:
-  Version:                 1.17.4+4293ba1
-  Session Id:              8139c12d63924ba5b5820320512ea761
-  Correlation Id:          142e08653fb65768dc8568d36d625696
-  External correlation Id: 663898687238691281
-  Machine Id:              CtFqJIMv80U5AEEBw5HyQBEPb58=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-chosun-nhn13" (connect: 0.00s, validation: 0.00s, handshake: 3.46s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chosun-nhn13-notifications" at "2026-03-31T03:05:12.688002Z"
-[Licensing::Module] Licensing Background thread has ended after 3.46s
-[Licensing::Module] Licensing is initialized (took 2.48s).
 [Licensing::Client] Successfully resolved entitlement details
 [Licensing::Module] License group:
   Id: 14568925226419-UnityPersXXXX
   Product: Unity Personal
   Type: Assigned
   Expiration: Unlimited
-- Loaded All Assemblies, in  2.657 seconds
+- Loaded All Assemblies, in  0.171 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Native extension for OSXStandalone target not found
-ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
-Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.333 seconds
-Domain Reload Profiling: 2991ms
-	BeginReloadAssembly (2585ms)
-		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (4ms)
-		BackupInstance (0ms)
-		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (25ms)
-	RebuildCommonClasses (30ms)
-	RebuildNativeTypeToScriptingClass (11ms)
-	initialDomainReloadingComplete (11ms)
-	LoadAllAssembliesAndSetupDomain (20ms)
-		LoadAssemblies (53ms)
-		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (15ms)
-			TypeCache.Refresh (11ms)
-				TypeCache.ScanAssembly (7ms)
-			BuildScriptInfoCaches (2ms)
-			ResolveRequiredComponents (0ms)
-	FinalizeReload (334ms)
-		ReleaseScriptCaches (0ms)
-		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (262ms)
-			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (1ms)
-			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (101ms)
-			ProcessInitializeOnLoadAttributes (118ms)
-			ProcessInitializeOnLoadMethodAttributes (37ms)
-			AfterProcessingInitializeOnLoad (1ms)
-			EditorAssembliesLoaded (0ms)
-		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (2ms)
-Launching external process: /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Helpers/UnityShaderCompiler
-Launched and connected shader compiler UnityShaderCompiler after 0.03 seconds
-Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 245 unused Assets / (28.1 KB). Loaded Objects now: 843.
-Memory consumption went from 63.9 MB to 63.8 MB.
-Total: 4.052083 ms (FindLiveObjects: 0.032042 ms CreateObjectMapping: 0.008625 ms MarkObjects: 3.929667 ms  DeleteObjects: 0.081541 ms)
-
-========================================================================
-Received Prepare
-Begin MonoManager ReloadAssembly
-Thread 0x16ead3000 may have been prematurely finalized
-- Loaded All Assemblies, in  0.173 seconds
-Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
-Native extension for OSXStandalone target not found
-ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
-Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.349 seconds
-Domain Reload Profiling: 522ms
-	BeginReloadAssembly (110ms)
-		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (4ms)
-		BackupInstance (0ms)
-		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (24ms)
-	RebuildCommonClasses (29ms)
-	RebuildNativeTypeToScriptingClass (11ms)
-	initialDomainReloadingComplete (10ms)
-	LoadAllAssembliesAndSetupDomain (12ms)
-		LoadAssemblies (49ms)
-		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (10ms)
-			TypeCache.Refresh (4ms)
-				TypeCache.ScanAssembly (0ms)
-			BuildScriptInfoCaches (5ms)
-			ResolveRequiredComponents (0ms)
-	FinalizeReload (349ms)
-		ReleaseScriptCaches (0ms)
-		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (269ms)
-			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (1ms)
-			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (82ms)
-			ProcessInitializeOnLoadAttributes (128ms)
-			ProcessInitializeOnLoadMethodAttributes (53ms)
-			AfterProcessingInitializeOnLoad (1ms)
-			EditorAssembliesLoaded (0ms)
-		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (5ms)
-Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 243 unused Assets / (7.2 KB). Loaded Objects now: 843.
-Memory consumption went from 70.3 MB to 70.2 MB.
-Total: 8.087458 ms (FindLiveObjects: 0.082792 ms CreateObjectMapping: 0.020375 ms MarkObjects: 7.906792 ms  DeleteObjects: 0.077041 ms)
-
-Prepare: number of updated asset objects reloaded= 0
-========================================================================
-Received Prepare
-Begin MonoManager ReloadAssembly
-Thread 0x16ead3000 may have been prematurely finalized
-- Loaded All Assemblies, in  0.166 seconds
-Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
-Native extension for OSXStandalone target not found
-ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
-Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.390 seconds
-Domain Reload Profiling: 557ms
-	BeginReloadAssembly (104ms)
-		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (6ms)
-		BackupInstance (0ms)
-		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (20ms)
-	RebuildCommonClasses (27ms)
-	RebuildNativeTypeToScriptingClass (10ms)
-	initialDomainReloadingComplete (11ms)
-	LoadAllAssembliesAndSetupDomain (13ms)
-		LoadAssemblies (48ms)
-		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (11ms)
-			TypeCache.Refresh (4ms)
-				TypeCache.ScanAssembly (0ms)
-			BuildScriptInfoCaches (5ms)
-			ResolveRequiredComponents (0ms)
-	FinalizeReload (391ms)
-		ReleaseScriptCaches (0ms)
-		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (307ms)
-			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (1ms)
-			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (92ms)
-			ProcessInitializeOnLoadAttributes (146ms)
-			ProcessInitializeOnLoadMethodAttributes (63ms)
-			AfterProcessingInitializeOnLoad (1ms)
-			EditorAssembliesLoaded (0ms)
-		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (5ms)
-Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 243 unused Assets / (7.2 KB). Loaded Objects now: 843.
-Memory consumption went from 70.3 MB to 70.3 MB.
-Total: 8.097292 ms (FindLiveObjects: 0.038667 ms CreateObjectMapping: 0.009541 ms MarkObjects: 8.001292 ms  DeleteObjects: 0.047500 ms)
-
-Prepare: number of updated asset objects reloaded= 0
-========================================================================
-Received Import Request.
-  Time since last request: 988657.074997 seconds.
-  path: Assets/Prefabs/Dagger.prefab
-  artifactKey: Guid(99f3c7f5c41f44fdf8a851a3342ce3fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Prefabs/Dagger.prefab using Guid(99f3c7f5c41f44fdf8a851a3342ce3fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'bd01d4d278e4073e18ac8290ea2d68ca') in 0.094258625 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 10
-

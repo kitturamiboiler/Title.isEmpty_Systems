@@ -28,7 +28,7 @@ MonoBehaviour:
   blinkExecutionDamage: 500
   blinkKillRefillsAirBlink: 1
   damage: 10
-  projectileSpeed: 60
+  projectileSpeed: 90
   blinkCooldown: 0.3
   maxDistance: 60
   coyoteTime: 0.1
