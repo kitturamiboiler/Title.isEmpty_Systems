@@ -7,4 +7,4 @@
 
 * [📅 2026-03-31: 코드 리팩토링](./docs/devlog/2026-03-31_Code_Repactoring.md)
 
-* [📅 2026-03-31: 코드 리팩토링 2](./docs/devlog/2026-04-01_Code_Repactoring2.md)
+* [📅 2026-03-31: 코드 리팩토링2](./docs/devlog/2026-04-01_Code_Repactoring2.md)
