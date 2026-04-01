@@ -7,7 +7,7 @@ using UnityEngine.Events;
 /// - Lives == 1 시 OnGrabbable 이벤트 발화 (GrabState 진입 신호)
 /// - LockForGrab 중에는 TakeDamage · Die 모두 차단 → 가설 2(타겟 유실) 방어
 /// </summary>
-public class EnemyHealth : MonoBehaviour, IHealth
+public class EnemyHealth : MonoBehaviour, IGrabbable
 {
     /// <summary>Grab 가능 상태로 전환되는 Lives 임계값.</summary>
     private const int GRAB_LIVES_THRESHOLD = 1;
@@ -86,6 +86,10 @@ public class EnemyHealth : MonoBehaviour, IHealth
         if (CurrentLives <= 0)
             Die();
     }
+
+    /// <inheritdoc/>
+    /// <remarks>일반 몹은 갑옷 없음. TakeDamage를 단순 위임한다.</remarks>
+    public void TakeSlamDamage(float damage) => TakeDamage(damage);
 
     /// <inheritdoc/>
     public void Die()

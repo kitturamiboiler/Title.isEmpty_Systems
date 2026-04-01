@@ -1,10 +1,15 @@
+using UnityEngine;
+
 /// <summary>
-/// 플레이어 대기 상태. 이동·투사체 입력이 없는 기본 상태.
-/// TODO(작성자): 이동 입력 감지 → RunState 전이 연결 — 날짜
+/// 플레이어 대기 상태.
+/// 수평 입력 감지 시 RunState로 전이한다.
+/// 실제 물리 이동은 PlayerMovement2D가 처리 (FSM 통합 미완 상태 유지).
 /// </summary>
 public class IdleState : IState2D
 {
     private readonly PlayerStateMachine _machine;
+
+    private const float INPUT_DEAD_ZONE = 0.01f;
 
     public IdleState(PlayerStateMachine machine)
     {
@@ -15,7 +20,9 @@ public class IdleState : IState2D
 
     public void Tick()
     {
-        // TODO(작성자): 이동 입력 감지 시 _machine.ChangeState(runState) — 날짜
+        float h = Input.GetAxisRaw("Horizontal");
+        if (Mathf.Abs(h) > INPUT_DEAD_ZONE)
+            _machine.ChangeState(_machine.Run);
     }
 
     public void FixedTick() { }

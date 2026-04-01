@@ -3,17 +3,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewWeaponData", menuName = "Game/Weapon Data")]
 public class WeaponData : ScriptableObject
 {
-    [Header("Player Ground Check (PlayerMovement2D)")]
-    [Tooltip("BoxCast 하단 거리. 캡슐/타일 두께에 맞게 조정.")]
-    public float groundBoxCastDistance = 0.28f;
-    [Range(0f, 1f)]
-    [Tooltip("바닥 법선 최소 Y. 낮출수록 경사·가장자리에서도 착지 인정.")]
-    public float groundMinFloorNormalY = 0.35f;
-    [Tooltip("발 모서리 보조 레이의 좌우 안쪽 여백.")]
-    public float groundFootCornerInset = 0.06f;
-    [Tooltip("BoxCast 시작점을 발보다 약간 위로 올려 콜라이더 내부 시작 문제 완화.")]
-    public float groundCheckVerticalLift = 0.02f;
-
     [Header("Dagger Embed (DaggerProjectile2D)")]
     [Tooltip("박혀 고정될 표면 레이어(Ground, Wall 등). 비어 있으면 이름 Wall/Ground로 폴백.")]
     public LayerMask daggerEmbedSurfaceMask;
@@ -37,16 +26,6 @@ public class WeaponData : ScriptableObject
     public float projectileSpeed = 20f; // 탄속 (단도 날아가는 속도)
     public float blinkCooldown = 3f;
     public float maxDistance = 15f;     // 단검이 유효한 최대 거리
-    public float coyoteTime = 0.1f;    // 낭떠러지 끝에서의 자비
-    public float inputBufferTime = 0.1f;  // 키씹 방지 -> 선 입력
-
-    [Header("Wall Jump")]
-    [Tooltip("벽 반대 방향으로 밀어내는 수평 속도 성분.")]
-    public float wallJumpHorizontalForce = 7f;
-    [Tooltip("벽 점프 시 위로 주는 수직 속도.")]
-    public float wallJumpVerticalForce = 12f;
-    [Tooltip("벽 점프 직후 벽 방향 입력 무시 시간(지그재그 상승 방지). 약 0.15초 권장.")]
-    public float wallJumpInputLockTime = 0.15f;
 
     [Header("Blink Invincibility")]
     public float invincibleDuration = 0.15f;

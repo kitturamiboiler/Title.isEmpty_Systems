@@ -12,6 +12,7 @@ public class PlayerBlinkController2D : MonoBehaviour
     [SerializeField] private Rigidbody2D playerRb;
     [SerializeField] private PlayerMovement2D playerMovement;
     [SerializeField] private WeaponData weaponData;
+    [SerializeField] private MovementData _movementData;
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Transform firePoint; // 단검 발사 지점
     [SerializeField] private Collider2D playerCollider;
@@ -93,7 +94,8 @@ public class PlayerBlinkController2D : MonoBehaviour
     }
 
     /// <summary>히트스톱 중에는 이동 스크립트가 velocity.x 등을 건드리지 않도록.</summary>
-    public bool IsHitStopBlockingMovement => _isHitStopping;
+    public bool IsHitStopBlockingMovement =>
+        HitStopManager.Instance != null && HitStopManager.Instance.IsActive;
 
     /// <summary>UpdateCharacterFlip로 방향이 바뀐 시각(이동 플립 억제용).</summary>
     public float LastAttackFlipGameTime => _lastAttackFlipGameTime;
@@ -113,6 +115,9 @@ public class PlayerBlinkController2D : MonoBehaviour
         ResetAirBlinkCount();
     }
 
+    /// <summary>현재 비행 중인 단검. BlinkState가 소멸 감지에 사용.</summary>
+    public DaggerProjectile2D CurrentDagger => currentDagger;
+
     private void Update()
     {
         // GrabState · SlamState 진행 중 단검 투척·블링크 입력 차단
@@ -121,7 +126,7 @@ public class PlayerBlinkController2D : MonoBehaviour
             return;
 
         HandleThrowInput();
-        HandleBlinkInput();
+        // Shift 블링크 입력은 BlinkState.Tick()으로 이관됨 — 여기서는 처리하지 않음
         HandleJumpBufferInput();
     }
 
@@ -140,15 +145,6 @@ public class PlayerBlinkController2D : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             ThrowDagger();
-        }
-    }
-
-    private void HandleBlinkInput()
-    {
-        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
-        {
-            // Blink는 오발사를 막기 위해 버퍼링하지 않고 즉시 1회 시도만 한다.
-            TryBlinkToDagger();
         }
     }
 
@@ -226,8 +222,11 @@ public class PlayerBlinkController2D : MonoBehaviour
         {
             currentDagger.Launch(firePosition, direction, weaponData);
 
-            // 4. 투척 성공 시 쿨타임 갱신
+            // 투척 성공 시 쿨타임 갱신 + BlinkState 전이
             _lastThrowTime = Time.time;
+
+            if (_stateMachine != null)
+                _stateMachine.ChangeState(_stateMachine.Blink);
         }
     }
     /// <summary>
@@ -364,10 +363,10 @@ public class PlayerBlinkController2D : MonoBehaviour
     {
         if (weaponData == null) return false;
 
-        // ── Grab 분기 ────────────────────────────────────────────────────────
-        // IsGrabbable: Lives == 1 && !isDead && !isLockedForGrab
-        var enemyHealth = hitObject.GetComponentInParent<EnemyHealth>();
-        if (enemyHealth != null && enemyHealth.IsGrabbable)
+        // ── Grab 분기 ─────────────────────────────────────────────────────────
+        // IGrabbable 구현체(EnemyHealth / BossHealth / HydraulicPiston) 통합 처리
+        var grabbable = hitObject.GetComponentInParent<IGrabbable>();
+        if (grabbable != null && grabbable.IsGrabbable)
         {
             if (_stateMachine == null)
             {
@@ -375,7 +374,7 @@ public class PlayerBlinkController2D : MonoBehaviour
             }
             else
             {
-                _stateMachine.Grab.SetTarget(enemyHealth);
+                _stateMachine.Grab.SetTarget(grabbable);
                 _stateMachine.ChangeState(_stateMachine.Grab);
 
                 // 그랩 성공도 공중 블링크 회복 보상 부여
@@ -484,12 +483,12 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     private float GetCoyoteTime()
     {
-        return weaponData != null ? weaponData.coyoteTime : 0.1f;
+        return _movementData != null ? _movementData.coyoteTime : 0.1f;
     }
 
     private float GetInputBufferTime()
     {
-        return weaponData != null ? weaponData.inputBufferTime : 0.1f;
+        return _movementData != null ? _movementData.inputBufferTime : 0.1f;
     }
 
     #endregion
@@ -622,7 +621,7 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     /// <summary>
     /// 블링크 직후 짧은 히트 스톱 연출.
-    /// Time.timeScale을 잠시 0.1로 내렸다 복구.
+    /// timeScale 조작은 HitStopManager에 위임. 파티클 스폰 중복 방지만 로컬 처리.
     /// </summary>
     private System.Collections.IEnumerator PerformHitStop()
     {
@@ -638,10 +637,12 @@ public class PlayerBlinkController2D : MonoBehaviour
             Destroy(ps.gameObject, ps.main.duration + 0.5f);
         }
 
-        float originalTimeScale = Time.timeScale;
-        Time.timeScale = weaponData != null ? weaponData.hitStopTimeScale : 0.1f;
+        float hitStopDuration = weaponData != null ? weaponData.hitStopDuration  : 0.05f;
+        float hitStopScale    = weaponData != null ? weaponData.hitStopTimeScale : 0.1f;
 
-        float hitStopDuration = weaponData != null ? weaponData.hitStopDuration : 0.05f;
+        // timeScale 관리를 HitStopManager에 위임 (PlayerHealth와 동시 발생 시 병합 처리)
+        HitStopManager.Instance?.Request(hitStopDuration, hitStopScale);
+
         float elapsed = 0f;
         while (elapsed < hitStopDuration)
         {
@@ -649,7 +650,6 @@ public class PlayerBlinkController2D : MonoBehaviour
             yield return null;
         }
 
-        Time.timeScale = originalTimeScale;
         _isHitStopping = false;
     }
 

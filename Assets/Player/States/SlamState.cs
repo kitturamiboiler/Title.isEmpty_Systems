@@ -21,9 +21,10 @@ public class SlamState : IState2D
     private readonly PlayerBlinkController2D _blinkController;
     private readonly IdleState _idleState;
 
-    private EnemyHealth _target;
+    private IGrabbable  _target;
     private Rigidbody2D _targetRb;
-    private bool _hasImpacted;
+    private Collider2D  _targetCol;   // 가설 2: 보스 콜라이더 크기 참조용
+    private bool        _hasImpacted;
 
     private static readonly Collider2D[] _overlapBuffer = new Collider2D[16];
 
@@ -55,7 +56,7 @@ public class SlamState : IState2D
     }
 
     /// <summary>GrabState.ExitForSlam()에서 소유권 이전 시 호출.</summary>
-    public void SetTarget(EnemyHealth target)
+    public void SetTarget(IGrabbable target)
     {
         _target = target;
     }
@@ -85,9 +86,10 @@ public class SlamState : IState2D
             return;
         }
 
-        // 타겟 Rigidbody2D 캐싱 + Kinematic 전환
-        // → 물리 엔진이 타겟 위치를 덮어쓰는 SE-3 방어
-        _targetRb = _target.GetComponent<Rigidbody2D>();
+        // 타겟 Rigidbody2D / Collider2D 캐싱
+        _targetRb  = _target.gameObject.GetComponent<Rigidbody2D>();
+        _targetCol = _target.gameObject.GetComponent<Collider2D>();
+
         if (_targetRb != null)
             _targetRb.bodyType = RigidbodyType2D.Kinematic;
 
@@ -95,7 +97,6 @@ public class SlamState : IState2D
         _target.LockForGrab();
 
         // 수평 속도 0 고정 + 수직 급강하
-        // → PlayerMovement2D.FixedUpdate 가드가 이 값을 덮어쓰지 않도록 SE-1 방어
         _rb.linearVelocity = new Vector2(0f, _weaponData.slamVerticalVelocity);
     }
 
@@ -106,7 +107,6 @@ public class SlamState : IState2D
         // 가설 3 방어
         if (_hasImpacted) return;
 
-        // _rb null이면 물리 처리 불가 — 크래시 방지 후 복귀
         if (_rb == null)
         {
             Debug.LogError("[SlamState] FixedTick: Rigidbody2D가 null입니다. IdleState로 복귀.");
@@ -114,7 +114,6 @@ public class SlamState : IState2D
             return;
         }
 
-        // 타겟 유실 안전망
         if (_target == null)
         {
             Debug.LogWarning("[SlamState] FixedTick 중 타겟이 null입니다. IdleState로 복귀.");
@@ -125,11 +124,13 @@ public class SlamState : IState2D
         // 타겟을 플레이어 발밑에 Kinematic MovePosition으로 고정
         if (_playerCollider != null && _targetRb != null)
         {
-            Vector2 feetPos = new Vector2(
+            Vector2 desiredFeetPos = new Vector2(
                 _rb.position.x,
                 _playerCollider.bounds.min.y
             );
-            _targetRb.MovePosition(feetPos);
+            // 가설 2 방어: 보스 콜라이더가 벽/지형에 박히지 않도록 위치 보정
+            Vector2 safePos = GetSafeBossPosition(desiredFeetPos);
+            _targetRb.MovePosition(safePos);
         }
 
         if (_playerCollider == null || _weaponData == null) return;
@@ -138,7 +139,6 @@ public class SlamState : IState2D
         float castDist = Mathf.Abs(_rb.linearVelocity.y) * Time.fixedDeltaTime
                          + _weaponData.slamCastMargin;
 
-        // 발바닥 하단 중점을 Origin으로 설정
         Vector2 castOrigin = new Vector2(
             _playerCollider.bounds.center.x,
             _playerCollider.bounds.min.y
@@ -167,12 +167,13 @@ public class SlamState : IState2D
         // 비정상 탈출(외부 강제 ChangeState) 시 리소스 안전망
         if (_target != null)
         {
-            if (_targetRb != null)
-                _targetRb.bodyType = RigidbodyType2D.Dynamic;
+        if (_targetRb != null)
+            _targetRb.bodyType = RigidbodyType2D.Dynamic;
 
-            _target.ReleaseGrab(executePendingDeath: true);
-            _target    = null;
-            _targetRb  = null;
+        _target.ReleaseGrab(executePendingDeath: true);
+        _target    = null;
+        _targetRb  = null;
+        _targetCol = null;
         }
 
         _hasImpacted = false;
@@ -187,7 +188,6 @@ public class SlamState : IState2D
         // 가설 3 방어: 중복 발화 원천 차단
         _hasImpacted = true;
 
-        // 착지 순간 수직 속도 0 (추가 파고듦 방지)
         if (_rb != null)
             _rb.linearVelocity = Vector2.zero;
 
@@ -215,13 +215,46 @@ public class SlamState : IState2D
         {
             if (_overlapBuffer[i] == null) continue;
 
-            // 소유 타겟은 ExecuteTargetDeath()에서 별도 처리
-            var hitEnemy = _overlapBuffer[i].GetComponentInParent<EnemyHealth>();
-            if (hitEnemy != null && hitEnemy == _target) continue;
+            var hitGrabbable = _overlapBuffer[i].GetComponentInParent<IGrabbable>();
+            if (hitGrabbable != null && hitGrabbable == _target) continue;
 
             var health = _overlapBuffer[i].GetComponentInParent<IHealth>();
             health?.TakeDamage(_weaponData.slamDamage);
         }
+    }
+
+    // ─── 위치 보정 (가설 2) ───────────────────────────────────────────────────
+
+    /// <summary>
+    /// 보스의 콜라이더 크기를 고려해 벽/지형에 박히지 않는 안전 위치를 반환.
+    /// 겹침이 감지되면 현재 위치(_targetRb.position)를 유지한다.
+    /// </summary>
+    private Vector2 GetSafeBossPosition(Vector2 desiredFeetPos)
+    {
+        if (_targetCol == null || _targetRb == null) return desiredFeetPos;
+
+        Vector2 size   = _targetCol.bounds.size;
+        // feet 위치 기준 보스 중심 계산 (Collider pivot이 center라 가정)
+        Vector2 center = desiredFeetPos + new Vector2(0f, size.y * 0.5f);
+
+        // 크기를 약간 축소해 경계값 오탐(벽 모서리 스침) 방지
+        Vector2 checkSize = size * 0.85f;
+
+        int wallGroundMask = (1 << Layers.Wall) | (1 << Layers.Ground);
+        Collider2D overlap = Physics2D.OverlapBox(
+            center,
+            checkSize,
+            0f,
+            wallGroundMask
+        );
+
+        if (overlap != null)
+        {
+            // 겹침 감지 → 현재 위치 유지 (이동 포기, 굳힘 방지)
+            return _targetRb.position;
+        }
+
+        return desiredFeetPos;
     }
 
     private void ExecuteTargetDeath()
@@ -232,12 +265,13 @@ public class SlamState : IState2D
         if (_targetRb != null)
             _targetRb.bodyType = RigidbodyType2D.Dynamic;
 
-        // 잠금 해제 후 명시적 데미지 → Lives 0 → Die()
+        // 잠금 해제 후 슬램 전용 데미지 → ArmorGauge 관통, Lives 감소
         _target.ReleaseGrab(executePendingDeath: false);
         if (_target.CurrentLives > 0)
-            _target.TakeDamage(_weaponData.slamDamage);
+            _target.TakeSlamDamage(_weaponData.slamDamage);
 
-        _target   = null;
-        _targetRb = null;
+        _target    = null;
+        _targetRb  = null;
+        _targetCol = null;
     }
 }
