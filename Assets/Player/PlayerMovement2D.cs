@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// PlayerBlinkController2D / WeaponData와 맞춘 2D 이동.
+/// PlayerBlinkController2D / MovementData와 맞춘 2D 이동.
 /// 상태: Grounded / Air / WallClimb — FixedUpdate에서 분리 처리.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
@@ -18,7 +18,7 @@ public class PlayerMovement2D : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Collider2D bodyCollider;
     [SerializeField] private PlayerBlinkController2D blinkController;
-    [SerializeField] private WeaponData weaponData;
+    [SerializeField] private MovementData _movementData;
     [Tooltip("SlamState 진행 중 수평 이동 간섭 차단용. 같은 GameObject에 부착된 PlayerStateMachine.")]
     [SerializeField] private PlayerStateMachine _stateMachine;
 
@@ -28,22 +28,22 @@ public class PlayerMovement2D : MonoBehaviour
 
     [Header("Jump")]
     [SerializeField] private float jumpVelocity = 12f;
-    [Tooltip("바닥만 코요테에 포함 (벽 제외). WeaponData가 있으면 그 coyoteTime 사용.")]
+    [Tooltip("바닥만 코요테에 포함 (벽 제외). MovementData가 있으면 그 coyoteTime 사용.")]
     [SerializeField] private float coyoteTimeFallback = 0.1f;
-    [Tooltip("WeaponData가 있으면 그 inputBufferTime 사용.")]
+    [Tooltip("MovementData가 있으면 그 inputBufferTime 사용.")]
     [SerializeField] private float inputBufferTimeFallback = 0.1f;
 
     [Header("Ground Check (floor only)")]
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private Vector2 groundCheckOffset = new Vector2(0f, 0f);
     [SerializeField] private Vector2 groundBoxSize = new Vector2(0.45f, 0.08f);
-    [Tooltip("WeaponData 없을 때 BoxCast 거리.")]
+    [Tooltip("MovementData 없을 때 BoxCast 거리.")]
     [SerializeField] private float groundCastDistanceFallback = 0.28f;
-    [Tooltip("WeaponData 없을 때 바닥 법선 최소 Y.")]
+    [Tooltip("MovementData 없을 때 바닥 법선 최소 Y.")]
     [SerializeField] private float minFloorNormalYFallback = 0.35f;
-    [Tooltip("WeaponData 없을 때 발 모서리 보조 레이 안쪽 여백.")]
+    [Tooltip("MovementData 없을 때 발 모서리 보조 레이 안쪽 여백.")]
     [SerializeField] private float groundFootCornerInsetFallback = 0.06f;
-    [Tooltip("WeaponData 없을 때 캐스트 시작 상승.")]
+    [Tooltip("MovementData 없을 때 캐스트 시작 상승.")]
     [SerializeField] private float groundCheckVerticalLiftFallback = 0.02f;
 
     [Header("Wall Climb")]
@@ -54,7 +54,7 @@ public class PlayerMovement2D : MonoBehaviour
     [Tooltip("발/몸통/머리 높이에서 벽 연속 여부 판정 시 몸 경계에서 안쪽으로 당긴 거리.")]
     [SerializeField] private float wallRayVerticalInset = 0.05f;
 
-    [Header("Wall Jump (fallback if WeaponData null)")]
+    [Header("Wall Jump (fallback if MovementData null)")]
     [SerializeField] private float wallJumpHorizontalFallback = 7f;
     [SerializeField] private float wallJumpVerticalFallback = 12f;
     [SerializeField] private float wallJumpInputLockFallback = 0.15f;
@@ -76,19 +76,19 @@ public class PlayerMovement2D : MonoBehaviour
     private int _wallJumpLockWallSide;
 
     private float CoyoteDuration =>
-        weaponData != null ? weaponData.coyoteTime : coyoteTimeFallback;
+        _movementData != null ? _movementData.coyoteTime : coyoteTimeFallback;
 
     private float InputBufferDuration =>
-        weaponData != null ? weaponData.inputBufferTime : inputBufferTimeFallback;
+        _movementData != null ? _movementData.inputBufferTime : inputBufferTimeFallback;
 
     private float WallJumpHorizontal =>
-        weaponData != null ? weaponData.wallJumpHorizontalForce : wallJumpHorizontalFallback;
+        _movementData != null ? _movementData.wallJumpHorizontalForce : wallJumpHorizontalFallback;
 
     private float WallJumpVertical =>
-        weaponData != null ? weaponData.wallJumpVerticalForce : wallJumpVerticalFallback;
+        _movementData != null ? _movementData.wallJumpVerticalForce : wallJumpVerticalFallback;
 
     private float WallJumpInputLockDuration =>
-        weaponData != null ? weaponData.wallJumpInputLockTime : wallJumpInputLockFallback;
+        _movementData != null ? _movementData.wallJumpInputLockTime : wallJumpInputLockFallback;
 
     private void Awake()
     {
@@ -394,10 +394,10 @@ public class PlayerMovement2D : MonoBehaviour
         if (groundMask.value == 0)
             return false;
 
-        float castDist = weaponData != null ? weaponData.groundBoxCastDistance : groundCastDistanceFallback;
-        float minNy = weaponData != null ? weaponData.groundMinFloorNormalY : minFloorNormalYFallback;
-        float cornerInset = weaponData != null ? weaponData.groundFootCornerInset : groundFootCornerInsetFallback;
-        float lift = weaponData != null ? weaponData.groundCheckVerticalLift : groundCheckVerticalLiftFallback;
+        float castDist  = _movementData != null ? _movementData.groundBoxCastDistance   : groundCastDistanceFallback;
+        float minNy     = _movementData != null ? _movementData.groundMinFloorNormalY    : minFloorNormalYFallback;
+        float cornerInset = _movementData != null ? _movementData.groundFootCornerInset  : groundFootCornerInsetFallback;
+        float lift      = _movementData != null ? _movementData.groundCheckVerticalLift  : groundCheckVerticalLiftFallback;
 
         Vector2 boxOrigin;
         if (bodyCollider != null)
@@ -428,9 +428,9 @@ public class PlayerMovement2D : MonoBehaviour
         {
             Bounds b = bodyCollider.bounds;
             float footY = b.min.y + lift * 0.5f;
-            Vector2 left = new Vector2(b.min.x + cornerInset, footY) + (Vector2)groundCheckOffset;
+            Vector2 left  = new Vector2(b.min.x + cornerInset, footY) + (Vector2)groundCheckOffset;
             Vector2 right = new Vector2(b.max.x - cornerInset, footY) + (Vector2)groundCheckOffset;
-            float rayLen = castDist + Mathf.Abs(lift) + groundBoxSize.y * 0.5f;
+            float rayLen  = castDist + Mathf.Abs(lift) + groundBoxSize.y * 0.5f;
 
             hit = Physics2D.Raycast(left, Vector2.down, rayLen, groundMask);
             if (hit.collider != null && hit.normal.y >= minNy)
@@ -461,16 +461,16 @@ public class PlayerMovement2D : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        float castDist = weaponData != null ? weaponData.groundBoxCastDistance : groundCastDistanceFallback;
-        float lift = weaponData != null ? weaponData.groundCheckVerticalLift : groundCheckVerticalLiftFallback;
+        float castDist = _movementData != null ? _movementData.groundBoxCastDistance   : groundCastDistanceFallback;
+        float lift     = _movementData != null ? _movementData.groundCheckVerticalLift  : groundCheckVerticalLiftFallback;
         Vector2 origin = bodyCollider != null
             ? new Vector2(bodyCollider.bounds.center.x, bodyCollider.bounds.min.y) + groundCheckOffset + Vector2.up * lift
             : (Vector2)transform.position + groundCheckOffset + Vector2.up * lift;
         Gizmos.color = Color.green;
-        Vector2 a = origin + new Vector2(-groundBoxSize.x * 0.5f, -groundBoxSize.y * 0.5f);
-        Vector2 br = origin + new Vector2(groundBoxSize.x * 0.5f, -groundBoxSize.y * 0.5f);
-        Vector2 c = origin + new Vector2(groundBoxSize.x * 0.5f, groundBoxSize.y * 0.5f);
-        Vector2 d = origin + new Vector2(-groundBoxSize.x * 0.5f, groundBoxSize.y * 0.5f);
+        Vector2 a  = origin + new Vector2(-groundBoxSize.x * 0.5f, -groundBoxSize.y * 0.5f);
+        Vector2 br = origin + new Vector2( groundBoxSize.x * 0.5f, -groundBoxSize.y * 0.5f);
+        Vector2 c  = origin + new Vector2( groundBoxSize.x * 0.5f,  groundBoxSize.y * 0.5f);
+        Vector2 d  = origin + new Vector2(-groundBoxSize.x * 0.5f,  groundBoxSize.y * 0.5f);
         Gizmos.DrawLine(a, br);
         Gizmos.DrawLine(br, c);
         Gizmos.DrawLine(c, d);
@@ -486,7 +486,7 @@ public class PlayerMovement2D : MonoBehaviour
         Bounds b = bodyCollider.bounds;
         float footY = b.min.y + wallRayVerticalInset;
         float headY = b.max.y - wallRayVerticalInset;
-        float midY = b.center.y;
+        float midY  = b.center.y;
         Gizmos.color = Color.cyan;
         DrawWallRayGizmo(new Vector2(b.min.x, footY), Vector2.left);
         DrawWallRayGizmo(new Vector2(b.min.x, midY), Vector2.left);

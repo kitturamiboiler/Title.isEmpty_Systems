@@ -53,12 +53,12 @@ public class PlayerStateMachine : MonoBehaviour
         if (blinkCtrl == null)
             Debug.LogWarning($"[PlayerStateMachine] PlayerBlinkController2D가 없습니다 — {gameObject.name}");
 
-        // 의존 순서: Idle 먼저 생성(SlamState가 참조) → Slam → Grab
+        // 의존 순서: Idle 먼저 생성(SlamState가 참조) → Slam → Grab → Blink(blinkCtrl 필요)
         Idle  = new IdleState(this);
         Run   = new RunState(this);
-        Blink = new BlinkState(this);
         Slam  = new SlamState(this, rb, col, _weaponData, _groundMask, blinkCtrl, Idle);
         Grab  = new GrabState(this, Slam, _weaponData);
+        Blink = new BlinkState(this, blinkCtrl);
     }
 
     private void Start()

@@ -114,19 +114,19 @@ public class PlayerHealth : MonoBehaviour, IHealth
     {
         _isHitStopping = true;
 
-        float original = Time.timeScale;
-        Time.timeScale = _weaponData != null ? _weaponData.hitStopTimeScale : 0.1f;
+        float duration  = _weaponData != null ? _weaponData.hitStopDuration  : 0.05f;
+        float timeScale = _weaponData != null ? _weaponData.hitStopTimeScale : 0.1f;
 
-        float duration = _weaponData != null ? _weaponData.hitStopDuration : 0.05f;
+        // timeScale 관리를 HitStopManager에 위임 (블링크 히트스톱과 동시 발생 시 병합 처리)
+        HitStopManager.Instance?.Request(duration, timeScale);
+
         float elapsed = 0f;
-
         while (elapsed < duration)
         {
             elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
 
-        Time.timeScale = original;
         _isHitStopping = false;
     }
 

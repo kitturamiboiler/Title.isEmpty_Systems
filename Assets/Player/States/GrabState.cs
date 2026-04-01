@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// 중형 몹을 잡은 상태 (EnemyHealth.Lives == 1 진입 조건).
-/// - Enter : EnemyHealth.LockForGrab() → 외부 데미지·Die 차단
+/// 중형 몹/보스를 잡은 상태 (IGrabbable.IsGrabbable == true 진입 조건).
+/// - Enter : IGrabbable.LockForGrab() → 외부 데미지·Die 차단
 /// - Tick  : S키 즉시 슬램 / slamAutoTriggerTime 초과 시 자동 슬램
 /// - ExitForSlam : 소유권을 SlamState로 이전 후 ChangeState
 /// - Exit  : _target == null 이면 즉시 리턴 (중복 ReleaseGrab 방지)
@@ -13,7 +13,7 @@ public class GrabState : IState2D
     private readonly SlamState _slamState;
     private readonly WeaponData _weaponData;
 
-    private EnemyHealth _target;
+    private IGrabbable _target;
     private float _slamTimer;
 
     /// <summary>
@@ -29,13 +29,13 @@ public class GrabState : IState2D
     /// <param name="weaponData">slamAutoTriggerTime 참조용.</param>
     public GrabState(PlayerStateMachine machine, SlamState slamState, WeaponData weaponData)
     {
-        _machine   = machine;
-        _slamState = slamState;
+        _machine    = machine;
+        _slamState  = slamState;
         _weaponData = weaponData;
     }
 
     /// <summary>GrabState 진입 전 반드시 호출. null 전달 시 Enter에서 조기 탈출.</summary>
-    public void SetTarget(EnemyHealth target)
+    public void SetTarget(IGrabbable target)
     {
         _target = target;
     }
@@ -58,7 +58,7 @@ public class GrabState : IState2D
     {
         if (_target == null)
         {
-            // 타겟 유실(SetTarget 미호출 또는 비정상 상태) → 즉시 Idle로 탈출해 소프트 락 방지
+            // 타겟 유실 → 즉시 Idle로 탈출해 소프트 락 방지
             _machine.ChangeState(_machine.Idle);
             return;
         }
@@ -74,10 +74,7 @@ public class GrabState : IState2D
             ExitForSlam();
     }
 
-    public void FixedTick()
-    {
-        // TODO(작성자): 추가 지형 감지 로직 필요 시 구현 — 날짜
-    }
+    public void FixedTick() { }
 
     /// <summary>
     /// SlamState로 소유권 이전 후 전이.
@@ -100,18 +97,17 @@ public class GrabState : IState2D
             return;
         }
 
-        _slamState.SetTarget(_target);              // ①
-        _target.ReleaseGrab(executePendingDeath: false); // ②
-        _target = null;                             // ③
-        _machine.ChangeState(_slamState);           // ④
+        _slamState.SetTarget(_target);                            // ①
+        _target.ReleaseGrab(executePendingDeath: false);          // ②
+        _target = null;                                           // ③
+        _machine.ChangeState(_slamState);                         // ④
     }
 
     public void Exit()
     {
         if (_target == null) return;
 
-        // 정상 흐름: ExitForSlam()이 _target = null을 보장하므로 여기 진입 안 함.
-        // 비정상 탈출(외부 강제 ChangeState) 시 안전망.
+        // 비정상 탈출(외부 강제 ChangeState) 시 안전망
         _target.ReleaseGrab(executePendingDeath: true);
         _target = null;
     }
