@@ -24,6 +24,10 @@ public class PlayerBlinkController2D : MonoBehaviour
     [SerializeField] private int maxAirBlinkCount = 1;
     [SerializeField] private int currentAirBlinkCount;
 
+    [Header("Blink Trail Visual")]
+    [Tooltip("블링크 잔상 LineRenderer용 머티리얼. 비워두면 Awake에서 Sprites/Default로 자동 생성.")]
+    [SerializeField] private Material _blinkTrailMaterial;
+
     private bool isGrounded;
     private bool isOnWall;
 
@@ -73,6 +77,15 @@ public class PlayerBlinkController2D : MonoBehaviour
 
         mainCam = Camera.main;
         ResetAirBlinkCount();
+
+        if (_blinkTrailMaterial == null)
+        {
+            var shader = Shader.Find("Sprites/Default");
+            if (shader == null)
+                Debug.LogError("[PlayerBlinkController2D] Shader 'Sprites/Default' 없음. 인스펙터에서 BlinkTrailMaterial을 직접 할당하세요.");
+            else
+                _blinkTrailMaterial = new Material(shader);
+        }
     }
 
     /// <summary>히트스톱 중에는 이동 스크립트가 velocity.x 등을 건드리지 않도록.</summary>
@@ -139,19 +152,20 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     private void ThrowDagger()
     {
-        // 1. 투척 쿨타임 체크 (0.5초 연속 투척 방지)
-        if (Time.time < _lastThrowTime + 0.5f) return;
+        // WeaponData가 없으면 모든 수치를 읽을 수 없으므로 가장 먼저 체크
+        if (weaponData == null || weaponData.daggerProjectilePrefab == null)
+            return;
+
+        // 투척 쿨타임 (WeaponData.blinkCooldown 기준)
+        if (Time.time < _lastThrowTime + weaponData.blinkCooldown) return;
 
         // 이미 던진 단검이 맵에 존재하면 새로 던질 수 없음
         if (currentDagger != null) return;
 
-        // 2. 공중 체공 제한 해제 (산나비식 스윙을 위해 주석 처리)
+        // 공중 체공 제한 해제 (산나비식 스윙을 위해 주석 처리)
         bool isInAir = IsAirborneForBlinkRules();
         // if (isInAir && currentAirBlinkCount <= 0) return;
         // if (isInAir) currentAirBlinkCount--;
-
-        if (weaponData == null || weaponData.daggerProjectilePrefab == null)
-            return;
 
         if (mainCam == null)
             mainCam = Camera.main;
@@ -171,11 +185,14 @@ public class PlayerBlinkController2D : MonoBehaviour
             return;
         direction.Normalize();
 
-        // 3. 무한 헬리콥터 체공 방지 로직 (공중 투척 시 하강 가속 부여)
+        // 무한 헬리콥터 체공 방지 (공중 투척 시 WeaponData.airThrowFallSpeed 이상 하강 보장)
         if (isInAir && playerRb != null)
         {
-            // 상승 중이더라도 강제로 아래로 떨어지게 하여 긴장감 유발
-            playerRb.linearVelocity = new Vector2(playerRb.linearVelocity.x, Mathf.Min(playerRb.linearVelocity.y, -2f));
+            float fallCap = -weaponData.airThrowFallSpeed;
+            playerRb.linearVelocity = new Vector2(
+                playerRb.linearVelocity.x,
+                Mathf.Min(playerRb.linearVelocity.y, fallCap)
+            );
         }
 
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
@@ -448,8 +465,9 @@ public class PlayerBlinkController2D : MonoBehaviour
         line.SetPosition(0, from);
         line.SetPosition(1, to);
 
-        // 머티리얼이 없으면 기본 머티리얼 생성
-        line.material = new Material(Shader.Find("Sprites/Default"));
+        // Awake에서 1회 생성된 캐시 사용 — Shader.Find / new Material 런타임 호출 없음
+        if (_blinkTrailMaterial != null)
+            line.material = _blinkTrailMaterial;
 
         // Hex #800000 → RGB(128, 0, 0)
         Color c = new Color(128f / 255f, 0f, 0f, 1f);
@@ -527,13 +545,11 @@ public class PlayerBlinkController2D : MonoBehaviour
     private Vector2 CalculateWallSafeOffset(Vector2 hitNormal)
     {
         Vector2 normal = hitNormal.normalized;
-        float baseOffset = 0.5f;
-        float safetyMargin = 0.02f;
+        float baseOffset   = weaponData != null ? weaponData.blinkWallSafeOffset    : 0.5f;
+        float safetyMargin = weaponData != null ? weaponData.blinkWallSafetyMargin  : 0.02f;
 
         if (playerCollider == null)
-        {
             return normal * (baseOffset + safetyMargin);
-        }
 
         // 콜라이더 반경을 Normal 축에 투영해 벽 끼임을 방지한다.
         Vector2 ext = playerCollider.bounds.extents;
@@ -570,19 +586,17 @@ public class PlayerBlinkController2D : MonoBehaviour
 
         _isHitStopping = true;
 
-        // 검붉은 누아르 블링크 이펙트 소환
         if (weaponData != null && weaponData.blinkEffectPrefab != null)
         {
-            // 플레이어 위치에서 짧게 터뜨리는 파티클
             var ps = Instantiate(weaponData.blinkEffectPrefab, transform.position, Quaternion.identity);
             ps.Play();
+            Destroy(ps.gameObject, ps.main.duration + 0.5f);
         }
 
         float originalTimeScale = Time.timeScale;
-        Time.timeScale = 0.1f;
+        Time.timeScale = weaponData != null ? weaponData.hitStopTimeScale : 0.1f;
 
-        // timeScale에 영향을 받지 않도록 realtime 기준 대기
-        float hitStopDuration = 0.05f;
+        float hitStopDuration = weaponData != null ? weaponData.hitStopDuration : 0.05f;
         float elapsed = 0f;
         while (elapsed < hitStopDuration)
         {
@@ -630,40 +644,38 @@ public class PlayerBlinkController2D : MonoBehaviour
     /// </summary>
     private System.Collections.IEnumerator PerformBlinkInvincibility()
     {
-        // 중요: Project Settings > Physics 2D 에서 PlayerInvincible 레이어 충돌 매트릭스를 설정해야
+        // Layers.cs 상수를 직접 사용 — WeaponData string 필드 제거
+        // 주의: Project Settings > Physics 2D 에서 PlayerInvincible 레이어 충돌 매트릭스를 설정해야
         // 적 투사체/트랩과의 충돌 무시가 정상 동작한다.
-        // 레이어 이름을 실제 레이어 인덱스로 변환
-        int invLayer = LayerMask.NameToLayer(weaponData.invincibleLayerName);
-        int origLayer = LayerMask.NameToLayer(weaponData.originalLayerName);
+        int invLayer  = Layers.PlayerInvincible;
+        int origLayer = Layers.Player;
 
         if (invLayer == -1 || origLayer == -1)
         {
-            Debug.LogWarning("Invincibility layer 설정이 잘못되었습니다. Project Settings > Tags and Layers에서 레이어를 확인하세요.");
+            Debug.LogWarning("[PlayerBlinkController2D] Layers.PlayerInvincible 또는 Layers.Player 가 -1입니다. " +
+                             "Project Settings > Tags and Layers에서 레이어를 확인하세요.");
             yield break;
         }
 
         // 원본 레이어/알파 백업
         _originalLayer = origLayer;
-        float backupAlpha = _originalAlpha;
-        if (spriteRenderer != null)
-        {
-            backupAlpha = spriteRenderer.color.a;
-        }
+        float backupAlpha = spriteRenderer != null ? spriteRenderer.color.a : _originalAlpha;
 
         // 무적 레이어로 전환
         gameObject.layer = invLayer;
 
-        // 시각적 피드백: 알파 0.5f로 반투명 처리
+        // 시각적 피드백: WeaponData.invincibleAlpha 로 반투명 처리
         if (spriteRenderer != null)
         {
-            Color c = spriteRenderer.color;
             _originalAlpha = backupAlpha;
-            c.a = 0.5f;
+            Color c = spriteRenderer.color;
+            c.a = weaponData != null ? weaponData.invincibleAlpha : 0.5f;
             spriteRenderer.color = c;
         }
 
-        // 무적 유지 시간: invincibleDuration + 히트 스톱 0.05f
-        float duration = weaponData.invincibleDuration + 0.05f;
+        // 무적 유지 시간: invincibleDuration + hitStopDuration (hitStop이 끝날 때까지 보장)
+        float hitStop  = weaponData != null ? weaponData.hitStopDuration : 0.05f;
+        float duration = weaponData != null ? weaponData.invincibleDuration + hitStop : 0.2f;
         yield return new WaitForSecondsRealtime(duration);
 
         RestoreInvincibilityState();

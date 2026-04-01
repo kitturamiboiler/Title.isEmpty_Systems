@@ -50,8 +50,27 @@ public class WeaponData : ScriptableObject
 
     [Header("Blink Invincibility")]
     public float invincibleDuration = 0.15f;
-    public string invincibleLayerName = "PlayerInvincible";
-    public string originalLayerName = "Player";
+    [Tooltip("무적 중 스프라이트 알파값 (0=완전투명, 1=불투명).")]
+    [Range(0f, 1f)]
+    public float invincibleAlpha = 0.5f;
+    // invincibleLayerName / originalLayerName 제거 — Layers.PlayerInvincible / Layers.Player 상수 사용
+
+    [Header("Hit Stop")]
+    [Tooltip("블링크 히트 스톱 유지 시간(초). 0.05 권장.")]
+    public float hitStopDuration = 0.05f;
+    [Tooltip("히트 스톱 중 timeScale 배율. 0에 가까울수록 강한 슬로우.")]
+    [Range(0.01f, 1f)]
+    public float hitStopTimeScale = 0.1f;
+
+    [Header("Blink Wall Offset")]
+    [Tooltip("벽에 박힌 단검으로 블링크 시 법선 방향으로 밀어내는 기본 거리.")]
+    public float blinkWallSafeOffset = 0.5f;
+    [Tooltip("벽 끼임 방지 추가 여유 거리.")]
+    public float blinkWallSafetyMargin = 0.02f;
+
+    [Header("Air Throw (헬리콥터 방지)")]
+    [Tooltip("공중 투척 시 강제 하강 최저 속도(양수 입력, 내부에서 음수 적용).")]
+    public float airThrowFallSpeed = 2f;
 
     [Header("Visuals")]
     public Sprite weaponSprite;
