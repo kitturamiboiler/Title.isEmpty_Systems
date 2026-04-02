@@ -206,7 +206,7 @@ public class DaggerProjectile2D : ProjectileBase2D
         if (rb != null)
         {
             rb.bodyType       = RigidbodyType2D.Dynamic;
-            rb.linearVelocity = newDirection.normalized * (weaponData != null ? weaponData.speed : 12f);
+            rb.linearVelocity = newDirection.normalized * (weaponData != null ? weaponData.projectileSpeed : 12f);
         }
 
         if (daggerCollider != null)

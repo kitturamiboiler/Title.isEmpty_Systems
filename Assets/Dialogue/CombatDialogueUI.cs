@@ -113,11 +113,15 @@ public class CombatDialogueUI : MonoBehaviour
                      DialoguePriority priority = DialoguePriority.Ambient,
                      Sprite          portrait  = null)
     {
+        float resolvedHold = holdTime > 0f
+            ? holdTime
+            : (priority == DialoguePriority.Combat ? _urgentHoldTime : _defaultHoldTime);
+
         var line = new DialogueLine
         {
             speaker  = speaker,
             text     = text,
-            holdTime = holdTime > 0f ? holdTime : _defaultHoldTime,
+            holdTime = resolvedHold,
             priority = priority,
             portrait = portrait,
         };

@@ -84,7 +84,7 @@ public class PaperDroneShieldState : BossState
         if (_destroyedCount >= SHIELD_DRONE_COUNT)
         {
             // Phase 2: 드론 전멸 직후 오버클럭 탄막으로 추가 압박
-            GoTo(_paper.PaperOverclock ?? Machine.Vulnerable);
+            GoTo((_paper.PaperOverclock as IBossState) ?? Machine.Vulnerable);
         }
     }
 
