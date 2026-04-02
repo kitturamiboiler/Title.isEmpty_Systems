@@ -70,11 +70,12 @@ public class GrabState : IState2D
         if (_canCountDown)
             _slamTimer += Time.unscaledDeltaTime;
 
-        bool sKeyHeld   = Input.GetKey(KeyCode.S);
-        bool autoTrigger = _weaponData != null
-                           && _slamTimer >= _weaponData.slamAutoTriggerTime;
+        // Shift: 슬램 즉시 발동 / 자동 타이머: 입력 없을 때 안전망
+        bool shiftPressed = Input.GetKeyDown(KeyCode.LeftShift);
+        bool autoTrigger  = _weaponData != null
+                            && _slamTimer >= _weaponData.slamAutoTriggerTime;
 
-        if (sKeyHeld || autoTrigger)
+        if (shiftPressed || autoTrigger)
             ExitForSlam();
     }
 
