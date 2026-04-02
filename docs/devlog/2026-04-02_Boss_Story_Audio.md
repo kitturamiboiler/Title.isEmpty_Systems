@@ -269,3 +269,100 @@ UI/                StruggleUI.cs
 ```
 
 > **신규/수정 합계: 약 25개 파일**
+
+---
+
+## 2026-04-01 — 스토리 시스템 구축 (데이터 파이프라인)
+
+> **목적**: 전체 스토리 "우산 아래" (1~12장) 텍스트를 게임 엔진과 연결하는 데이터 파이프라인 설계·구현  
+> **핵심 키워드**: StoryDatabase, 데이터 주입 계층, 방어적 설계, 텍스트 오버플로우 방어
+
+기존에 뼈대만 있던 `CutscenePlayer` / `TriggerCutscene` / `BossCombatDialogue`에 실제 스토리 데이터를 주입하는 계층을 추가했습니다.
+
+---
+
+### 📄 신규 파일
+
+#### `Assets/Ending/StoryDatabase.cs`
+
+전체 12챕터 스토리 대사를 C# 정적 메서드로 파싱하는 중앙 데이터베이스.
+
+- 1장 오프닝(스킵 불가) ~ 12장 설계자전·엔딩까지 전 시퀀스 수록
+- 블로킹 컷씬용 `List<CutsceneLine>` 반환 메서드 **18종**
+- 보스 전투 대사 배열 (하운드/서류/형/그림자/설계자) 별도 분리
+- 이동 중 독백 (WalkAndTalk) 문자열 배열 챕터별 제공
+- `CutsceneLine` 헬퍼(`N`, `D`, `P`, `FO`, `FI`, `C`)로 데이터 가독성 확보
+
+#### `Assets/Dialogue/ChapterStoryLoader.cs`
+
+`TriggerCutscene` 컴패니언. Inspector에서 챕터 키를 선택하면 `StoryDatabase`에서 라인을 읽어 자동 주입.
+
+- Inspector 드롭다운 18종 (`Chapter1_Opening` ~ `Chapter12_Opening`)
+- `Awake()`에서 `TriggerCutscene.OverrideCutsceneLines()` 호출
+- 기획자가 **코드 수정 없이** 챕터·씬에 트리거를 배치 가능
+
+#### `Assets/Dialogue/BossDialogueLoader.cs`
+
+`BossCombatDialogue` 컴패니언. 보스 종류 선택 시 전투 대사 자동 주입.
+
+- 5종 보스 (`Hound`, `Paper`, `Brother`, `Shadow`, `Designer`)
+- Phase 1/2 진입 대사, 패리 반응, 그랩 반응 자동 연결
+
+---
+
+### ✏️ 기존 파일 수정
+
+| 파일 | 변경 내용 |
+|---|---|
+| `TriggerCutscene.cs` | `OverrideCutsceneLines(List<CutsceneLine>)` 공개 메서드 추가 |
+| `BossCombatDialogue.cs` | `OverridePhase1/2Lines`, `OverrideParriedLines`, `OverrideGrabbedLines` 주입 API 추가 |
+
+---
+
+### 🛡️ 방어적 설계 (Rule 1)
+
+**H1 — 텍스트 오버플로우 (UI Clipping)**
+
+- `StoryDatabase` 전체 라인 대상 28자 초과 세그먼트 15개 수동 수정, `\n` 분리
+- `[InitializeOnLoadMethod]` 자동 검증 메서드 추가 → 에디터 실행마다 전수 스캔, 초과 항목 `LogWarning` 출력
+
+**H2 — 보스 사망·대사 경합 (Race Condition)**
+
+- `BossHealth.cs` — `public bool IsDead` 프로퍼티 공개
+- `BossCombatDialogue.TriggerReaction()` / `TriggerPhase()` — `IsDead == true` 시 얼리 리턴 가드 추가
+- **효과**: 슬램 처형으로 보스가 죽는 프레임에 `OnGrabbed` 이벤트가 동시 발동돼도 대사 차단
+
+**H3 — PlaythroughTracker 증분 저장 오류**
+
+- `PlaythroughTracker.cs` — `MarkUpToChapter(N)`, `GetHighestCompletedChapter()` 신규 메서드 추가
+- `TriggerCutscene.ActivateTrigger()` — 챕터 트리거 도달 시 `MarkUpToChapter(_chapterIndex - 1)` 자동 호출
+- **효과**: 9장 중간 강제 종료 → 재시작 시 1~8장 스킵권 보장. *"직전 챕터까지는 무조건 저장"* 원칙 적용
+
+---
+
+### 🏗️ 완성 아키텍처 구조
+
+```
+StoryDatabase          ← 텍스트 원본 (12챕터 전체)
+       ↓
+ChapterStoryLoader     ← TriggerCutscene에 라인 주입 (Inspector 드롭다운)
+       ↓
+TriggerCutscene        ← 씬 배치 트리거 / 블로킹 or 워크앤톡 모드 선택
+       ↓
+CutscenePlayer         ← 라인바이라인 나레이션 엔진 (FadeIn/Out, Pause, Confirm)
+
+BossDialogueLoader     ← BossCombatDialogue에 전투 대사 주입
+       ↓
+BossCombatDialogue     ← 패리/그랩/페이즈 반응 대사 (Priority Queue 기반)
+       ↓
+CombatDialogueUI       ← 비블로킹 자막 (게임플레이 중단 없음)
+```
+
+---
+
+### 📊 현재 상태
+
+- [x] 데이터 파이프라인 설계 완료
+- [x] 로직 구현 완료 — 씬 배치 후 `ChapterStoryLoader._storyKey` 설정만으로 즉시 작동
+- [ ] 스프라이트 에셋 미제작
+- [ ] 오디오 에셋 미제작
