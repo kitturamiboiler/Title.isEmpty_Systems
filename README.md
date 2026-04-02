@@ -12,3 +12,5 @@
 * [📅 2026-04-01: FSM 안정화 및 전투 입력](./docs/devlog/2026-04-01_Blink_Grab_Slam.md)
 
 * [📅 2026-04-02: Boss 설계, 엔딩 크레딧 설계](./docs/devlog/2026-04-02_Boss_Story_Audio.md)
+
+* [📅 2026-04-02: Unity_Error_Fix](./docs/devlog/2026-04-03_Unity_Error_Fix.md)
