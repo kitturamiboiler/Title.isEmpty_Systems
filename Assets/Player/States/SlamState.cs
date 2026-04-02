@@ -191,6 +191,10 @@ public class SlamState : IState2D
         if (_rb != null)
             _rb.linearVelocity = Vector2.zero;
 
+        // 슬램 착지 카메라 셰이크 — 블링크보다 강하고 긴 충격 피드백
+        if (CameraShaker.Instance != null && _weaponData != null)
+            CameraShaker.Instance.Shake(_weaponData.slamShakeDuration, _weaponData.slamShakeIntensity);
+
         ApplyAreaDamage(impactPoint);
         ExecuteTargetDeath();
 

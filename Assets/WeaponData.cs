@@ -74,6 +74,18 @@ public class WeaponData : ScriptableObject
     [Tooltip("착지 충격파 범위(유닛). 주변 적 범위 데미지 반경.")]
     public float slamRadius = 2.5f;
 
+    [Header("Camera Shake — Slam")]
+    [Tooltip("슬램 착지 시 카메라 셰이크 지속 시간. 블링크보다 길게 (0.15 권장).")]
+    public float slamShakeDuration  = 0.15f;
+    [Tooltip("슬램 착지 시 카메라 셰이크 강도. 블링크보다 강하게 (0.28 권장).")]
+    public float slamShakeIntensity = 0.28f;
+
+    [Header("Camera Shake — Grab")]
+    [Tooltip("그랩 순간 짧은 충격 셰이크 지속 시간 (0.05 권장).")]
+    public float grabShakeDuration  = 0.05f;
+    [Tooltip("그랩 순간 짧은 충격 셰이크 강도 (0.12 권장).")]
+    public float grabShakeIntensity = 0.12f;
+
     [Header("Parry (PlayerParryController2D)")]
     [Tooltip("패리 판정 반지름. 플레이어 중심 기준 OverlapCircle 반경.")]
     public float parryRadius = 1.2f;

@@ -589,35 +589,36 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     private void TriggerCameraShake()
     {
-        if (mainCam == null) return;
+        float duration  = weaponData != null ? weaponData.cameraShakeDuration  : 0f;
+        float intensity = weaponData != null ? weaponData.cameraShakeIntensity : 0f;
 
-        if (_cameraShakeCoroutine != null)
+        if (CameraShaker.Instance != null)
         {
-            StopCoroutine(_cameraShakeCoroutine);
+            CameraShaker.Instance.Shake(duration, intensity);
+            return;
         }
 
-        _cameraShakeCoroutine = StartCoroutine(PerformCameraShake());
+        // CameraShaker가 씬에 없을 경우 폴백: Camera.main 직접 흔들기
+        if (mainCam == null) return;
+        if (_cameraShakeCoroutine != null)
+            StopCoroutine(_cameraShakeCoroutine);
+        _cameraShakeCoroutine = StartCoroutine(FallbackShakeRoutine(duration, intensity));
     }
 
-    private System.Collections.IEnumerator PerformCameraShake()
+    private System.Collections.IEnumerator FallbackShakeRoutine(float duration, float intensity)
     {
         if (mainCam == null) yield break;
-
-        Transform camTransform = mainCam.transform;
-        Vector3 originalPos = camTransform.localPosition;
-        float duration = weaponData != null ? weaponData.cameraShakeDuration : 0.06f;
-        float intensity = weaponData != null ? weaponData.cameraShakeIntensity : 0.08f;
-        float elapsed = 0f;
-
+        Transform camT = mainCam.transform;
+        Vector3 origin = camT.localPosition;
+        float elapsed  = 0f;
         while (elapsed < duration)
         {
             Vector2 offset = Random.insideUnitCircle * intensity;
-            camTransform.localPosition = originalPos + new Vector3(offset.x, offset.y, 0f);
+            camT.localPosition = origin + new Vector3(offset.x, offset.y, 0f);
             elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
-
-        camTransform.localPosition = originalPos;
+        camT.localPosition   = origin;
         _cameraShakeCoroutine = null;
     }
 

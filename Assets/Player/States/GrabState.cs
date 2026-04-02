@@ -52,6 +52,10 @@ public class GrabState : IState2D
         _slamTimer    = 0f;
         // MVP: HitStop 콜백 미연결 상태 — 진입 즉시 카운트다운 허용
         _canCountDown = true;
+
+        // 그랩 순간 짧은 충격 셰이크 — '잡았다'는 손맛 피드백
+        if (CameraShaker.Instance != null && _weaponData != null)
+            CameraShaker.Instance.Shake(_weaponData.grabShakeDuration, _weaponData.grabShakeIntensity);
     }
 
     public void Tick()
