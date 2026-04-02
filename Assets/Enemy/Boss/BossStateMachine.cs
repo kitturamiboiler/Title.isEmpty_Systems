@@ -286,13 +286,14 @@ public abstract class BossStateMachine : MonoBehaviour, IBindable
     }
 
     /// <summary>패리 가능 투사체 발사. Parry 시스템이 연결되면 자동으로 PlayerBlink 리필 트리거.</summary>
-    public virtual void SpawnParryableProjectile(Vector2 direction)
+    /// <returns>런치된 <see cref="BossParryableProjectile2D"/> 또는 실패 시 null.</returns>
+    public virtual BossParryableProjectile2D SpawnParryableProjectile(Vector2 direction)
     {
-        if (_data == null || _data.parryableProjectilePrefab == null) return;
+        if (_data == null || _data.parryableProjectilePrefab == null) return null;
         if (_firePoint == null)
         {
             Debug.LogWarning($"[{GetType().Name}] FirePoint가 연결되지 않았습니다.");
-            return;
+            return null;
         }
 
         var go = Object.Instantiate(
@@ -300,7 +301,8 @@ public abstract class BossStateMachine : MonoBehaviour, IBindable
             _firePoint.position,
             Quaternion.identity
         );
-        go.GetComponent<BossParryableProjectile2D>()?.Launch(
+        var proj = go.GetComponent<BossParryableProjectile2D>();
+        proj?.Launch(
             direction,
             _data.projectileSpeed,
             _data.projectileDamage,
@@ -309,6 +311,7 @@ public abstract class BossStateMachine : MonoBehaviour, IBindable
         );
 
         Destroy(go, _data.projectileLifetime + 0.5f);
+        return proj;
     }
 
     // ─── IBindable (보스 구속) ────────────────────────────────────────────────

@@ -37,7 +37,7 @@ public class HoundShockwaveState : BossState
 
         if (Machine.PlayerTransform == null)
         {
-            GoTo(_hound?.HoundExposePiston ?? Machine.Vulnerable);
+            GoTo((_hound?.HoundExposePiston as IBossState) ?? Machine.Vulnerable);
             return;
         }
 
@@ -77,6 +77,6 @@ public class HoundShockwaveState : BossState
         yield return new WaitForSeconds(_hound?.ShockwaveWaitAfter ?? 1.2f);
 
         // ── 피스톤 노출 단계로 전이 ───────────────────────────────────────────
-        GoTo(_hound?.HoundExposePiston ?? Machine.Vulnerable);
+        GoTo((_hound?.HoundExposePiston as IBossState) ?? Machine.Vulnerable);
     }
 }

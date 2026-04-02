@@ -167,6 +167,6 @@ public class ShadowHauntState : BossState
         if (sr != null) sr.color = originalColor;
 
         // ── 4. 퍼즐 강제 재시작 ──────────────────────────────────────────────
-        GoTo(_shadow?.ShadowGhostPhase ?? Machine.Idle);
+        GoTo((_shadow?.ShadowGhostPhase as IBossState) ?? Machine.Idle);
     }
 }

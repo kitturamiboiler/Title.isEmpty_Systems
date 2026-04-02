@@ -45,7 +45,7 @@ public class DesignerWaveState : BossState
         if (!_waveComplete && _aliveCount <= 0 && _currentWave > 3)
         {
             _waveComplete = true;
-            GoTo(_designer?.DesignerUmbrellaPhase ?? Machine.Vulnerable);
+            GoTo((_designer?.DesignerUmbrellaPhase as IBossState) ?? Machine.Vulnerable);
         }
     }
 
@@ -74,7 +74,7 @@ public class DesignerWaveState : BossState
 
         // 모든 Wave 완료 → 설계자 Phase 1 시작
         _waveComplete = true;
-        GoTo(_designer?.DesignerUmbrellaPhase ?? Machine.Vulnerable);
+        GoTo((_designer?.DesignerUmbrellaPhase as IBossState) ?? Machine.Vulnerable);
     }
 
     private IEnumerator SpawnAndWaitWave1()
