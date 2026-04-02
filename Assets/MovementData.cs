@@ -38,4 +38,22 @@ public class MovementData : ScriptableObject
 
     [Tooltip("벽 점프 직후 벽 방향 입력 무시 시간(지그재그 상승 방지). 약 0.15초 권장.")]
     public float wallJumpInputLockTime = 0.15f;
+
+    [Header("Horizontal (Air)")]
+    [Tooltip("공중에서 목표 수평 속도에 곱함. 1 미만이면 공중 제어력 약화.")]
+    [Min(0f)]
+    public float airHorizontalSpeedMultiplier = 1f;
+
+    [Tooltip("0이면 공중 수평 속도 즉시 적용. 0보다 크면 FixedUpdate마다 가속(관성·미끄러짐 타일에 유리).")]
+    [Min(0f)]
+    public float airHorizontalAcceleration = 0f;
+
+    [Header("Jump polish")]
+    [Range(0f, 1f)]
+    [Tooltip("1이면 비활성. 점프 키를 뗐을 때 상승 중일 때 수직 속도에 한 번 곱함(짧은 점프).")]
+    public float jumpReleaseUpwardMultiplier = 1f;
+
+    [Header("Wall")]
+    [Tooltip("벽에서 상하 입력이 없을 때 초당 하강 속도(음수 권장). 0이면 제자리.")]
+    public float wallSlideDownSpeed = 0f;
 }

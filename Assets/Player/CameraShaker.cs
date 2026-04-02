@@ -44,10 +44,16 @@ public class CameraShaker : MonoBehaviour
     [SerializeField] private float _defaultDuration  = 0.06f;
     [SerializeField] private float _defaultIntensity = 0.08f;
 
+    [Header("Slam — Orthographic Zoom Punch")]
+    [Tooltip("Orthographic 메인 카메라. 비우면 Start에서 Camera.main 1회 캐싱.")]
+    [SerializeField] private Camera _orthoCamera;
+
     // ─── Runtime ──────────────────────────────────────────────────────────────
 
     private Rigidbody2D _playerRb;
     private Coroutine   _shakeCoroutine;
+    private Coroutine   _orthoPulseCoroutine;
+    private float       _orthoBaseSize;
     private Vector3     _shakeOffset;       // 현재 프레임 셰이크 오프셋
     private Vector2     _lookAheadOffset;   // 현재 Look Ahead 오프셋 (Lerp 결과)
     private Vector3     _baseLocalPos;      // 셰이크/Look Ahead 없는 원점 로컬 위치
@@ -77,6 +83,9 @@ public class CameraShaker : MonoBehaviour
 
         if (_playerTransform != null)
             _playerRb = _playerTransform.GetComponent<Rigidbody2D>();
+
+        if (_orthoCamera == null)
+            _orthoCamera = Camera.main;
     }
 
     private void LateUpdate()
@@ -105,6 +114,44 @@ public class CameraShaker : MonoBehaviour
             StopCoroutine(_shakeCoroutine);
 
         _shakeCoroutine = StartCoroutine(ShakeRoutine(d, i));
+    }
+
+    /// <summary>
+    /// 슬램 등 강한 임팩트용: orthographicSize를 잠깐 줄였다가(줌 인) 복귀.
+    /// unscaledDeltaTime 기반이라 히트스톱 중에도 부드럽게 동작한다.
+    /// </summary>
+    /// <param name="zoomInAmount">orthographicSize에서 뺄 값(양수). 0이면 무시.</param>
+    /// <param name="recoverDuration">원래 크기로 돌아오는 시간(초).</param>
+    public void SlamOrthoZoomPunch(float zoomInAmount, float recoverDuration)
+    {
+        if (zoomInAmount <= 0f || recoverDuration <= 0f) return;
+        if (_orthoCamera == null)
+            _orthoCamera = Camera.main;
+        if (_orthoCamera == null || !_orthoCamera.orthographic) return;
+
+        if (_orthoPulseCoroutine != null)
+            StopCoroutine(_orthoPulseCoroutine);
+        _orthoPulseCoroutine = StartCoroutine(OrthoZoomPunchRoutine(zoomInAmount, recoverDuration));
+    }
+
+    private IEnumerator OrthoZoomPunchRoutine(float zoomInAmount, float recoverDuration)
+    {
+        float startSize = _orthoCamera.orthographicSize;
+        float peakSize  = Mathf.Max(0.35f, startSize - zoomInAmount);
+        _orthoCamera.orthographicSize = peakSize;
+
+        float t = 0f;
+        while (t < recoverDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / recoverDuration);
+            k = 1f - (1f - k) * (1f - k);
+            _orthoCamera.orthographicSize = Mathf.Lerp(peakSize, startSize, k);
+            yield return null;
+        }
+
+        _orthoCamera.orthographicSize = startSize;
+        _orthoPulseCoroutine = null;
     }
 
     // ─── Look Ahead ───────────────────────────────────────────────────────────

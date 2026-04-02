@@ -126,7 +126,8 @@ public class SlamState : IState2D
         // 착지 후 바운스 입력 대기 중
         if (!_waitingForBounce) return;
 
-        _bounceWindowTimer += Time.deltaTime;
+        // 히트스톱 중 Time.deltaTime이 축소되므로 실시간 기준으로 측정
+        _bounceWindowTimer += Time.unscaledDeltaTime;
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -249,9 +250,35 @@ public class SlamState : IState2D
         if (_rb != null)
             _rb.linearVelocity = Vector2.zero;
 
-        // 슬램 착지 카메라 셰이크 — 블링크보다 강하고 긴 충격 피드백
-        if (CameraShaker.Instance != null && _weaponData != null)
-            CameraShaker.Instance.Shake(_weaponData.slamShakeDuration, _weaponData.slamShakeIntensity);
+        // ── 슬램 ‘주스’ 묶음: 히트스톱 → 셰이크 → 줌 펀치 → 스프라이트 스쿼시 ──
+        if (_weaponData != null)
+        {
+            if (_weaponData.slamHitStopDuration > 0f)
+            {
+                HitStopManager.Instance?.Request(
+                    _weaponData.slamHitStopDuration,
+                    _weaponData.slamHitStopTimeScale
+                );
+            }
+
+            if (CameraShaker.Instance != null)
+            {
+                CameraShaker.Instance.Shake(
+                    _weaponData.slamShakeDuration,
+                    _weaponData.slamShakeIntensity
+                );
+                if (_weaponData.slamCameraOrthoZoomIn > 0f)
+                {
+                    CameraShaker.Instance.SlamOrthoZoomPunch(
+                        _weaponData.slamCameraOrthoZoomIn,
+                        _weaponData.slamOrthoZoomRecoverDuration
+                    );
+                }
+            }
+
+            var juice = _machine != null ? _machine.GetComponent<SlamImpactJuice>() : null;
+            juice?.PlaySquash(_weaponData);
+        }
 
         // 볼링핀 효과: 피해자를 가장 가까운 적 방향으로 날린 뒤 처치
         ApplyCollateralLaunch(impactPoint);

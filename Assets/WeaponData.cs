@@ -84,11 +84,28 @@ public class WeaponData : ScriptableObject
     [Tooltip("슬램 피해자를 날렸을 때 2차 피해자에게 가하는 힘. 클수록 멀리 날린다.")]
     public float slamCollateralForce = 14f;
 
+    [Header("Slam Juice — HitStop + Zoom + Squash")]
+    [Tooltip("슬램 착지 순간 히트스톱 지속(초, unscaled). 0이면 비활성.")]
+    public float slamHitStopDuration = 0.16f;
+    [Tooltip("슬램 히트스톱 timeScale. 낮을수록 ‘멈춤’이 강함 (0.04~0.12 권장).")]
+    [Range(0.01f, 1f)]
+    public float slamHitStopTimeScale = 0.06f;
+    [Tooltip("Orthographic 카메라 줌 인(orthographicSize 감소량). 0이면 비활성. 임팩트 ‘펀치’용.")]
+    public float slamCameraOrthoZoomIn = 0.45f;
+    [Tooltip("줌 인 후 원래 크기로 복귀하는 시간(초, unscaled).")]
+    public float slamOrthoZoomRecoverDuration = 0.28f;
+    [Tooltip("슬램 순간 스프라이트 가로 스트레치 배율.")]
+    public float slamVisualSquashStretchX = 1.14f;
+    [Tooltip("슬램 순간 스프라이트 세로 압축 배율.")]
+    public float slamVisualSquashCompressY = 0.68f;
+    [Tooltip("스쿼시 연출 전체 길이(초, unscaled).")]
+    public float slamVisualSquashDuration = 0.14f;
+
     [Header("Camera Shake — Slam")]
-    [Tooltip("슬램 착지 시 카메라 셰이크 지속 시간. 블링크보다 길게 (0.15 권장).")]
-    public float slamShakeDuration  = 0.15f;
-    [Tooltip("슬램 착지 시 카메라 셰이크 강도. 블링크보다 강하게 (0.28 권장).")]
-    public float slamShakeIntensity = 0.28f;
+    [Tooltip("슬램 착지 시 카메라 셰이크 지속 시간. 히트스톱과 겹쳐도 unscaled로 잘 보임.")]
+    public float slamShakeDuration  = 0.22f;
+    [Tooltip("슬램 착지 시 카메라 셰이크 강도.")]
+    public float slamShakeIntensity = 0.42f;
 
     [Header("Camera Shake — Grab")]
     [Tooltip("그랩 순간 짧은 충격 셰이크 지속 시간 (0.05 권장).")]
