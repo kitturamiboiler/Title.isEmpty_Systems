@@ -30,6 +30,44 @@ public static class PlaythroughTracker
         PlayerPrefs.Save();
     }
 
+    /// <summary>
+    /// H3 증분 저장 안전망: chapter 1 ~ upToChapter 전체를 한 번에 완료 처리.
+    ///
+    /// 사용 시점:
+    ///   TriggerCutscene.ActivateTrigger()에서 직전 챕터를 저장할 때,
+    ///   "1장 트리거에 도달 = 1장 이전은 모두 완료" 논리가 성립하지 않을 수 있으므로
+    ///   '지금까지 도달한 최고 챕터 직전'까지 연속 저장을 보장한다.
+    ///
+    /// 예: MarkUpToChapter(5) → 1, 2, 3, 4, 5 모두 완료 처리.
+    /// </summary>
+    public static void MarkUpToChapter(int upToChapter)
+    {
+        if (!IsValidChapter(upToChapter)) return;
+
+        bool anyNew = false;
+        for (int i = 1; i <= upToChapter; i++)
+        {
+            if (PlayerPrefs.GetInt(KEY_PREFIX + i, 0) != 1)
+            {
+                PlayerPrefs.SetInt(KEY_PREFIX + i, 1);
+                anyNew = true;
+            }
+        }
+
+        if (anyNew) PlayerPrefs.Save();
+    }
+
+    /// <summary>
+    /// 현재 PlayerPrefs 기준으로 완료된 가장 높은 챕터 번호를 반환.
+    /// 클리어 기록이 없으면 0 반환.
+    /// </summary>
+    public static int GetHighestCompletedChapter()
+    {
+        for (int i = MAX_CHAPTERS; i >= 1; i--)
+            if (HasCompletedChapter(i)) return i;
+        return 0;
+    }
+
     /// <summary>해당 챕터를 이미 한 번 이상 클리어했는지.</summary>
     public static bool HasCompletedChapter(int chapter)
     {
