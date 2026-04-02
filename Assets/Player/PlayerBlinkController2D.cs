@@ -261,18 +261,8 @@ public class PlayerBlinkController2D : MonoBehaviour
         if (currentDagger.IsReflected)
             return false;
 
-        bool isInAir = IsAirborneForBlinkRules();
-        if (isInAir && currentAirBlinkCount <= 0)
-        {
-            // 공중 블링크 횟수 초과
-            return false;
-        }
-
-        if (isInAir)
-        {
-            // 블링크 실행 시 즉시 소모
-            currentAirBlinkCount--;
-        }
+        // 공중 블링크 제한 없음 — "단검 1개 = 블링크 1회" 규칙이 자연 제한 역할
+        // 단검이 없으면 ImmediateBlink/TryBlinkToDagger 자체가 false 반환하므로 무한 체공 불가
 
         Vector2 startPos = transform.position;
         Vector2 targetPos = currentDagger.CurrentPosition;
@@ -391,7 +381,9 @@ public class PlayerBlinkController2D : MonoBehaviour
         // ── Grab 분기 ─────────────────────────────────────────────────────────
         // IGrabbable 구현체(EnemyHealth / BossHealth / HydraulicPiston) 통합 처리
         var grabbable = hitObject.GetComponentInParent<IGrabbable>();
-        if (grabbable != null && grabbable.IsGrabbable)
+        // Lives >= 2 인 적만 그랩 가능. Lives 1 짜리는 블링크 도착 즉시 척살 분기로 내려감.
+        bool canGrab = grabbable != null && grabbable.IsGrabbable && grabbable.CurrentLives >= 2;
+        if (canGrab)
         {
             if (_stateMachine == null)
             {

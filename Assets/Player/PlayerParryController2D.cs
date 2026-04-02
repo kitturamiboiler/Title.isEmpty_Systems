@@ -33,6 +33,12 @@ public class PlayerParryController2D : MonoBehaviour
     private bool  _isActive;        // 판정 창 열린 상태
     private bool  _isCooling;       // 쿨다운 중
     private bool  _hasParried;      // 가설 1: 이번 윈도우 패리 성공 여부 — 중복 발화 하드 게이트
+
+    /// <summary>
+    /// 현재 패리 판정 창이 열려 있으면 true.
+    /// EliteEnemy.ApplySwingDamage()가 데미지 전에 선 체크하여 동시 판정 충돌을 막는다.
+    /// </summary>
+    public bool IsParryWindowActive => _isActive;
     private float _activeTimer;
     private float _coolTimer;
 
@@ -96,6 +102,7 @@ public class PlayerParryController2D : MonoBehaviour
         // 가설 1 하드 게이트: 이번 윈도우에서 이미 패리했으면 추가 판정 차단
         if (_hasParried) return;
 
+        // ── 1순위: 투사체 패리 (기존) ─────────────────────────────────────────
         int count = Physics2D.OverlapCircleNonAlloc(
             transform.position,
             _weaponData != null ? _weaponData.parryRadius : 1.2f,
@@ -109,11 +116,42 @@ public class PlayerParryController2D : MonoBehaviour
             var proj = _overlapBuffer[i].GetComponent<BossParryableProjectile2D>();
             if (proj == null || !proj.IsParryable) continue;
 
-            // 패리 성공 — 플레이어를 향해 날아오는 방향으로 편향
             Vector2 reflectDir = -(proj.transform.position - transform.position).normalized;
             proj.Deflect(reflectDir);
 
-            _hasParried = true;   // 가설 1: 동일 프레임 내 추가 Deflect 원천 차단
+            _hasParried = true;
+            OnParrySuccess();
+            EndParryWindow(success: true);
+            return;
+        }
+
+        // ── 2순위: 근접 공격 패리 (IParryableMelee) ──────────────────────────
+        // 별도의 더 좁은 반경으로 재검색 — 근접 공격은 거의 밀착 상태
+        float meleeRadius = _weaponData != null ? _weaponData.parryMeleeRadius : 0.9f;
+        int meleeCount = Physics2D.OverlapCircleNonAlloc(
+            transform.position, meleeRadius, _overlapBuffer
+        );
+
+        for (int i = 0; i < meleeCount; i++)
+        {
+            if (_overlapBuffer[i] == null) continue;
+
+            var melee = _overlapBuffer[i].GetComponentInParent<IParryableMelee>();
+            if (melee == null || !melee.IsInMeleeAttack) continue;
+
+            // 스턴 & 그랩 가능 상태 진입
+            float stunDur = _weaponData != null ? _weaponData.parryMeleeStunDuration : 1.0f;
+            melee.OnMeleeParried(stunDur);
+
+            // 적을 위쪽으로 띄워 블링크-그랩 연계 가능하게
+            var rb = _overlapBuffer[i].GetComponentInParent<Rigidbody2D>();
+            if (rb != null)
+            {
+                float launchF = _weaponData != null ? _weaponData.parryMeleeLaunchForce : 9f;
+                rb.AddForce(Vector2.up * launchF, ForceMode2D.Impulse);
+            }
+
+            _hasParried = true;
             OnParrySuccess();
             EndParryWindow(success: true);
             return;

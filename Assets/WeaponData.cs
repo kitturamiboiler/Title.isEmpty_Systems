@@ -74,6 +74,16 @@ public class WeaponData : ScriptableObject
     [Tooltip("착지 충격파 범위(유닛). 주변 적 범위 데미지 반경.")]
     public float slamRadius = 2.5f;
 
+    [Header("Slam Bounce")]
+    [Tooltip("슬램 착지 후 Space 입력 시 위로 튀어오르는 속도.")]
+    public float slamBounceForce = 20f;
+    [Tooltip("슬램 착지 후 바운스 입력을 받는 유효 시간(초). 이 시간 안에 Space를 눌러야 한다.")]
+    public float slamBounceWindowDuration = 0.35f;
+
+    [Header("Slam Collateral")]
+    [Tooltip("슬램 피해자를 날렸을 때 2차 피해자에게 가하는 힘. 클수록 멀리 날린다.")]
+    public float slamCollateralForce = 14f;
+
     [Header("Camera Shake — Slam")]
     [Tooltip("슬램 착지 시 카메라 셰이크 지속 시간. 블링크보다 길게 (0.15 권장).")]
     public float slamShakeDuration  = 0.15f;
@@ -105,6 +115,14 @@ public class WeaponData : ScriptableObject
     [Tooltip("패리 성공 시 HitStop timeScale.")]
     [Range(0.01f, 1f)]
     public float parryHitStopTimeScale = 0.05f;
+
+    [Header("Parry — Melee (IParryableMelee)")]
+    [Tooltip("근접 패리 감지 반경. 투사체 parryRadius보다 작게 유지하는 것을 권장.")]
+    public float parryMeleeRadius = 0.9f;
+    [Tooltip("근접 패리 성공 시 적이 그랩 가능 상태를 유지하는 시간(초). 너무 길면 보스전 밸런스 붕괴.")]
+    public float parryMeleeStunDuration = 1.0f;
+    [Tooltip("근접 패리 성공 시 적에게 가하는 위쪽 방향 힘. 블링크-그랩 연계를 위해 약간 공중으로 띄운다.")]
+    public float parryMeleeLaunchForce = 9f;
 
     [Header("Prefabs")]
     public GameObject daggerProjectilePrefab; // 2D 단검 투사체 프리팹

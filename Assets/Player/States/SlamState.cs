@@ -13,6 +13,11 @@ public class SlamState : IState2D
     /// <summary>BoxCast 슬라이스 두께. 얇을수록 오탐(벽 모서리 등) 감소.</summary>
     private const float CAST_BOX_HEIGHT = 0.05f;
 
+    /// <summary>바닥까지 이 거리 이상이면 에어 슬램 판정 — 강제 하강 제한 타이머 작동.</summary>
+    private const float AIR_SLAM_FLOOR_THRESHOLD = 6f;
+    /// <summary>에어 슬램 최대 유지 시간(초). 초과 시 현재 위치에서 강제 충격.</summary>
+    private const float AIR_SLAM_MAX_DURATION = 1.2f;
+
     private readonly PlayerStateMachine _machine;
     private readonly Rigidbody2D _rb;
     private readonly Collider2D _playerCollider;
@@ -23,8 +28,13 @@ public class SlamState : IState2D
 
     private IGrabbable  _target;
     private Rigidbody2D _targetRb;
-    private Collider2D  _targetCol;   // 가설 2: 보스 콜라이더 크기 참조용
+    private Collider2D  _targetCol;       // 가설 2: 보스 콜라이더 크기 참조용
     private bool        _hasImpacted;
+    private bool        _waitingForBounce;
+    private bool        _isBounceProcessed; // H2: 바운스 스패밍 방어
+    private float       _bounceWindowTimer;
+    private bool        _isAirSlam;         // H1: 바닥 멀리 있을 때 에어 슬램 판정
+    private float       _airSlamTimer;
 
     private static readonly Collider2D[] _overlapBuffer = new Collider2D[16];
 
@@ -68,7 +78,12 @@ public class SlamState : IState2D
     public void Enter()
     {
         // null 가드보다 앞에 리셋 — Enter 조기 리턴 시에도 FixedTick의 중복 발화 방지
-        _hasImpacted = false;
+        _hasImpacted        = false;
+        _waitingForBounce   = false;
+        _isBounceProcessed  = false;
+        _bounceWindowTimer  = 0f;
+        _isAirSlam          = false;
+        _airSlamTimer       = 0f;
 
         if (_rb == null)
         {
@@ -98,9 +113,34 @@ public class SlamState : IState2D
 
         // 수평 속도 0 고정 + 수직 급강하
         _rb.linearVelocity = new Vector2(0f, _weaponData.slamVerticalVelocity);
+
+        // H1: 바닥까지 거리 측정 — 멀면 에어 슬램 모드 (최대 지속 타이머 작동)
+        RaycastHit2D floorCheck = Physics2D.Raycast(
+            _rb.position, Vector2.down, AIR_SLAM_FLOOR_THRESHOLD, _groundMask
+        );
+        _isAirSlam = (floorCheck.collider == null); // 바닥이 임계 거리 내에 없으면 에어 슬램
     }
 
-    public void Tick() { }
+    public void Tick()
+    {
+        // 착지 후 바운스 입력 대기 중
+        if (!_waitingForBounce) return;
+
+        _bounceWindowTimer += Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            ExecuteBounce();
+            return;
+        }
+
+        // 윈도우 만료 → 그냥 착지 (바운스 없음)
+        if (_bounceWindowTimer >= (_weaponData?.slamBounceWindowDuration ?? 0.35f))
+        {
+            _waitingForBounce = false;
+            _machine.ChangeState(_idleState);
+        }
+    }
 
     public void FixedTick()
     {
@@ -119,6 +159,19 @@ public class SlamState : IState2D
             Debug.LogWarning("[SlamState] FixedTick 중 타겟이 null입니다. IdleState로 복귀.");
             _machine.ChangeState(_idleState);
             return;
+        }
+
+        // H1: 에어 슬램 타이머 — 바닥이 멀 때 무한 낙하 방지
+        if (_isAirSlam)
+        {
+            _airSlamTimer += Time.fixedDeltaTime;
+            if (_airSlamTimer >= AIR_SLAM_MAX_DURATION)
+            {
+                // 현재 위치에서 강제 충격 — 콤보 중단 없음
+                Debug.LogWarning("[SlamState] 에어 슬램 타이머 초과 → 현재 위치 강제 충격.");
+                ExecuteImpact(_rb.position);
+                return;
+            }
         }
 
         // 타겟을 플레이어 발밑에 Kinematic MovePosition으로 고정
@@ -167,16 +220,21 @@ public class SlamState : IState2D
         // 비정상 탈출(외부 강제 ChangeState) 시 리소스 안전망
         if (_target != null)
         {
-        if (_targetRb != null)
-            _targetRb.bodyType = RigidbodyType2D.Dynamic;
+            if (_targetRb != null)
+                _targetRb.bodyType = RigidbodyType2D.Dynamic;
 
-        _target.ReleaseGrab(executePendingDeath: true);
-        _target    = null;
-        _targetRb  = null;
-        _targetCol = null;
+            _target.ReleaseGrab(executePendingDeath: true);
+            _target    = null;
+            _targetRb  = null;
+            _targetCol = null;
         }
 
-        _hasImpacted = false;
+        _hasImpacted       = false;
+        _waitingForBounce  = false;
+        _isBounceProcessed = false;
+        _bounceWindowTimer = 0f;
+        _isAirSlam         = false;
+        _airSlamTimer      = 0f;
     }
 
     // -------------------------------------------------------------------------
@@ -195,13 +253,18 @@ public class SlamState : IState2D
         if (CameraShaker.Instance != null && _weaponData != null)
             CameraShaker.Instance.Shake(_weaponData.slamShakeDuration, _weaponData.slamShakeIntensity);
 
+        // 볼링핀 효과: 피해자를 가장 가까운 적 방향으로 날린 뒤 처치
+        ApplyCollateralLaunch(impactPoint);
         ApplyAreaDamage(impactPoint);
         ExecuteTargetDeath();
 
         // SE-2 방어: 착지 판정 즉시 동기화 → 공중 1프레임 방지
         _blinkController?.SyncAirBlinkAfterFloorLanding();
 
-        _machine.ChangeState(_idleState);
+        // 바운스 윈도우 시작 — Tick()에서 Space 입력 대기
+        _waitingForBounce  = true;
+        _bounceWindowTimer = 0f;
+        // Idle 전이는 Tick()이 담당 (바운스 여부에 따라 분기)
     }
 
     private void ApplyAreaDamage(Vector2 center)
@@ -259,6 +322,114 @@ public class SlamState : IState2D
         }
 
         return desiredFeetPos;
+    }
+
+    // ─── 바운스 ──────────────────────────────────────────────────────────────
+
+    /// <summary>Space 입력 시 플레이어를 위로 튕겨올린다.</summary>
+    private void ExecuteBounce()
+    {
+        // H2: 스패밍 방어 — 윈도우 내 단 1회만 유효
+        if (_isBounceProcessed) return;
+        _isBounceProcessed = true;
+        _waitingForBounce  = false;
+
+        if (_rb != null && _weaponData != null)
+            _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _weaponData.slamBounceForce);
+
+        _machine.ChangeState(_idleState);
+    }
+
+    // ─── 볼링핀 콜래터럴 ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 슬램 피해자를 가장 가까운 2차 타깃 방향으로 발사하고 그 타깃에 데미지를 준다.
+    /// 피해자 Rigidbody가 없거나 주변에 2차 타깃이 없으면 무시.
+    /// </summary>
+    private void ApplyCollateralLaunch(Vector2 center)
+    {
+        if (_target == null || _weaponData == null) return;
+        if (_weaponData.slamEnemyLayerMask.value == 0) return;
+
+        // 검색 반경 = slamRadius × 1.8 (슬램 범위보다 넓게)
+        float searchRadius = _weaponData.slamRadius * 1.8f;
+        int count = Physics2D.OverlapCircleNonAlloc(
+            center, searchRadius, _overlapBuffer, _weaponData.slamEnemyLayerMask
+        );
+
+        float closest = float.MaxValue;
+        Collider2D nearestCol = null;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (_overlapBuffer[i] == null) continue;
+            var g = _overlapBuffer[i].GetComponentInParent<IGrabbable>();
+            if (g != null && g == _target) continue; // 슬램 피해자 본인 제외
+
+            float dist = Vector2.Distance(center, _overlapBuffer[i].transform.position);
+            if (dist < closest)
+            {
+                closest    = dist;
+                nearestCol = _overlapBuffer[i];
+            }
+        }
+
+        if (nearestCol == null)
+        {
+            // H3: 2차 타깃 부재 — 플레이어가 바라보는 방향 전방 벽으로 날린다
+            LaunchVictimToWall(center);
+            return;
+        }
+
+        // 피해자 Rigidbody를 Dynamic으로 전환 후 해당 방향으로 날린다
+        if (_targetRb != null)
+        {
+            _targetRb.bodyType = RigidbodyType2D.Dynamic;
+            Vector2 launchDir  = ((Vector2)nearestCol.transform.position - center).normalized;
+            _targetRb.linearVelocity = launchDir * _weaponData.slamCollateralForce;
+        }
+
+        // 2차 타깃 데미지 (슬램 데미지의 50%)
+        var health = nearestCol.GetComponentInParent<IHealth>();
+        health?.TakeDamage(_weaponData.slamDamage * 0.5f);
+
+        // 2차 타깃도 밀쳐낸다 (넉백)
+        var secondRb = nearestCol.GetComponentInParent<Rigidbody2D>();
+        if (secondRb != null)
+        {
+            Vector2 knockDir = ((Vector2)nearestCol.transform.position - center).normalized;
+            secondRb.AddForce(knockDir * _weaponData.slamCollateralForce, ForceMode2D.Impulse);
+        }
+    }
+
+    /// <summary>
+    /// H3 방어: 2차 타깃 없을 때 피해자를 플레이어 전방 벽 방향으로 날린다.
+    /// 벽 충돌 지점을 레이캐스트로 예측 후 강력한 파괴 FX 훅을 남긴다.
+    /// </summary>
+    private void LaunchVictimToWall(Vector2 center)
+    {
+        if (_targetRb == null || _weaponData == null) return;
+
+        // 플레이어 바라보는 방향 (SpriteRenderer flip 없이도 rb velocity로 추정)
+        float facingX = _rb != null && _rb.linearVelocity.x < 0f ? -1f : 1f;
+        Vector2 wallDir = new Vector2(facingX, 0f);
+
+        // 벽까지 레이캐스트 — 없으면 그냥 전방으로 날린다
+        int wallMask = (1 << Layers.Wall) | (1 << Layers.Ground);
+        RaycastHit2D wallHit = Physics2D.Raycast(center, wallDir, 20f, wallMask);
+
+        _targetRb.bodyType       = RigidbodyType2D.Dynamic;
+        _targetRb.linearVelocity = wallDir * _weaponData.slamCollateralForce;
+
+        // 벽 충돌 예상 지점에 카메라 셰이크 예약 + FX 훅
+        // TODO(기획): 벽 충돌 파편 이펙트 스폰 — 아트 완성 후 EffectManager.SpawnEffect() 연결
+        if (wallHit.collider != null)
+        {
+            // 더 강한 셰이크로 '파괴' 느낌 강조 (벽 충돌 = 슬램보다 1.5배)
+            float dur = _weaponData.slamShakeDuration  * 1.5f;
+            float mag = _weaponData.slamShakeIntensity * 1.5f;
+            CameraShaker.Instance?.Shake(dur, mag);
+        }
     }
 
     private void ExecuteTargetDeath()

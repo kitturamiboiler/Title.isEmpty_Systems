@@ -128,6 +128,14 @@ public class DaggerProjectile2D : ProjectileBase2D
             IsStuckToWall = true;
             EmbedIntoSurface();
             SpawnHitFx(collision);
+
+            // 벽/바닥 착탄도 적 착탄과 동일하게 자동 블링크
+            if (_blinkCtrl == null)
+            {
+                Debug.LogWarning("[DaggerProjectile2D] PlayerBlinkController2D 캐시가 없어 벽 자동 블링크 불가.");
+                return;
+            }
+            _blinkCtrl.ImmediateBlink();
             return;
         }
 
