@@ -9,7 +9,10 @@ using UnityEngine;
 /// 현재는 FSM과 기존 컨트롤러가 병렬 동작한다.
 /// TODO(작성자): 입력 처리를 각 State로 이관 후 기존 컨트롤러 Update 제거 — 날짜
 /// </summary>
-public class PlayerStateMachine : MonoBehaviour
+/// <summary>
+/// IBindable: BrotherBindProjectile2D가 플레이어를 구속할 때 사용.
+/// </summary>
+public class PlayerStateMachine : MonoBehaviour, IBindable
 {
     [Header("Refs")]
     [Tooltip("SlamState BoxCast 레이어. PlayerMovement2D.groundMask와 동일 레이어로 설정.")]
@@ -35,6 +38,9 @@ public class PlayerStateMachine : MonoBehaviour
     /// <summary>슬램 상태.</summary>
     public SlamState  Slam  { get; private set; }
 
+    /// <summary>Boss 3 [Brother] 구속 상태. Bind() 호출 전 SetDuration() 자동 처리.</summary>
+    public PlayerBoundState Bound { get; private set; }
+
     /// <summary>현재 활성 State. 외부에서 직접 교체 금지.</summary>
     public IState2D CurrentState { get; private set; }
 
@@ -59,6 +65,7 @@ public class PlayerStateMachine : MonoBehaviour
         Slam  = new SlamState(this, rb, col, _weaponData, _groundMask, blinkCtrl, Idle);
         Grab  = new GrabState(this, Slam, _weaponData);
         Blink = new BlinkState(this, blinkCtrl);
+        Bound = new PlayerBoundState(this, rb, blinkCtrl);
     }
 
     private void Start()
@@ -86,6 +93,29 @@ public class PlayerStateMachine : MonoBehaviour
         CurrentState = newState;
         CurrentState.Enter();
     }
+
+    // ─── IBindable ────────────────────────────────────────────────────────────
+
+    /// <inheritdoc/>
+    public void Bind(float duration)
+    {
+        if (Bound == null)
+        {
+            Debug.LogError("[PlayerStateMachine] PlayerBoundState가 초기화되지 않았습니다.");
+            return;
+        }
+        Bound.SetDuration(duration);
+        ChangeState(Bound);
+    }
+
+    /// <inheritdoc/>
+    public void Unbind()
+    {
+        if (CurrentState == Bound)
+            ChangeState(Idle);
+    }
+
+    // ─── Lifecycle ────────────────────────────────────────────────────────────
 
     private void Update()
     {

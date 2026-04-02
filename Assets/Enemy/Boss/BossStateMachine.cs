@@ -39,7 +39,12 @@ public enum BossPhase { Phase1 = 1, Phase2 = 2, Phase3 = 3 }
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
 [RequireComponent(typeof(BossHealth))]
-public abstract class BossStateMachine : MonoBehaviour
+/// <summary>
+/// IBindable 확장: 플레이어가 보스를 일시 구속할 수 있는 인터페이스.
+/// Shadow 보스의 잔상 고정, Designer 보스의 군단원 구속 등에 활용.
+/// 기본 구현은 Rigidbody 정지 + AI 일시 중단. 서브클래스 오버라이드 가능.
+/// </summary>
+public abstract class BossStateMachine : MonoBehaviour, IBindable
 {
     // ─── 직렬화 ───────────────────────────────────────────────────────────────
 
@@ -188,6 +193,10 @@ public abstract class BossStateMachine : MonoBehaviour
     {
         if (newPhase <= CurrentPhase) return;
         CurrentPhase = newPhase;
+
+        // 페이즈 전환 대사 자동 발동 (BossCombatDialogue가 없으면 조용히 스킵)
+        GetComponent<BossCombatDialogue>()?.TriggerPhase(newPhase);
+
         OnPhaseChanged(newPhase);
     }
 
@@ -300,6 +309,45 @@ public abstract class BossStateMachine : MonoBehaviour
         );
 
         Destroy(go, _data.projectileLifetime + 0.5f);
+    }
+
+    // ─── IBindable (보스 구속) ────────────────────────────────────────────────
+
+    private Coroutine _bindRoutine;
+
+    /// <summary>
+    /// 플레이어가 보스를 일시 구속.
+    /// 기본: Rigidbody 정지 + duration 후 자동 해제.
+    /// Shadow 잔상 고정 / Designer 군단원 구속 등 서브클래스 오버라이드 가능.
+    /// </summary>
+    public virtual void Bind(float duration)
+    {
+        if (duration <= 0f) return;
+        if (_bindRoutine != null) StopCoroutine(_bindRoutine);
+        _bindRoutine = StartCoroutine(BossBindRoutine(duration));
+    }
+
+    /// <summary>외부에서 보스 구속을 즉시 해제.</summary>
+    public virtual void Unbind()
+    {
+        if (_bindRoutine != null)
+        {
+            StopCoroutine(_bindRoutine);
+            _bindRoutine = null;
+        }
+        if (Rb != null) Rb.bodyType = RigidbodyType2D.Dynamic;
+    }
+
+    private System.Collections.IEnumerator BossBindRoutine(float duration)
+    {
+        if (Rb != null)
+        {
+            Rb.linearVelocity = Vector2.zero;
+            Rb.bodyType       = RigidbodyType2D.Kinematic;
+        }
+        // TODO(기획): 보스 구속 전용 시각 이펙트 추가 — 2026-04-01
+        yield return new WaitForSeconds(duration);
+        Unbind();
     }
 
     // ─── 서브클래스 계약 ──────────────────────────────────────────────────────

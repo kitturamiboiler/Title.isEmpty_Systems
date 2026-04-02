@@ -33,6 +33,9 @@ public class PlayerHealth : MonoBehaviour, IHealth
     /// <summary>무적 프레임 진행 중 여부. 외부 공격 판정 코드에서 참조 가능.</summary>
     public bool IsInvincible => _isInvincible;
 
+    /// <summary>사망 여부. PlayerBoundState가 타임아웃 데미지 후 Idle 복귀 방지에 사용.</summary>
+    public bool IsDead => _isDead;
+
     private bool _isDead;
     private bool _isInvincible;
     private bool _isHitStopping;

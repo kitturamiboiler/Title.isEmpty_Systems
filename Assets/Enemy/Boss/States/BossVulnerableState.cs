@@ -23,6 +23,9 @@ public class BossVulnerableState : BossState
             Machine.Rb.linearVelocity = Vector2.zero;
 
         Health?.SetVulnerable(true);
+
+        // 취약 상태 진입 반응 대사
+        Machine.GetComponent<BossCombatDialogue>()?.TriggerReaction(BossCombatDialogue.ReactionType.BossVulnerable);
     }
 
     public override void Tick()
