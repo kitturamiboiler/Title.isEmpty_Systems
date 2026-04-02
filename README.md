@@ -7,5 +7,5 @@
 
 Advanced 2D Blink Mechanics with Hit-stop, I-frame, and Normal-offset in Unity.
 
-> 💡 **Unity 개발 현황 확인:** [feature/Unity 브랜치로 이동하기](https://github.com/kitturamiboiler/Title.isEmpty_Systems/tree/feature/Unity?tab=readme-ov-file)
+[![Unity Branch](https://img.shields.io/badge/Branch-feature/Unity-green?style=for-the-badge&logo=unity)](https://github.com/kitturamiboiler/Title.isEmpty_Systems/tree/feature/Unity?tab=readme-ov-file)
 
