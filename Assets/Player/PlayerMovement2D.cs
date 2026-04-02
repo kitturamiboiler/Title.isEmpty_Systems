@@ -58,6 +58,8 @@ public class PlayerMovement2D : MonoBehaviour
     [SerializeField] private float wallJumpHorizontalFallback = 7f;
     [SerializeField] private float wallJumpVerticalFallback = 12f;
     [SerializeField] private float wallJumpInputLockFallback = 0.15f;
+    [Tooltip("MovementData 없을 때 벽 미끄러짐(음수=아래로, 0=정지).")]
+    [SerializeField] private float wallSlideDownSpeedFallback = 0f;
 
     [Header("Flip (localScale.x, 단검 플립과 동일 규칙)")]
     [SerializeField] private float flipSuppressAfterAttackSeconds = 0.08f;
@@ -90,6 +92,21 @@ public class PlayerMovement2D : MonoBehaviour
     private float WallJumpInputLockDuration =>
         _movementData != null ? _movementData.wallJumpInputLockTime : wallJumpInputLockFallback;
 
+    private float AirHorizontalSpeedMultiplier =>
+        _movementData != null ? _movementData.airHorizontalSpeedMultiplier : 1f;
+
+    private float AirHorizontalAcceleration =>
+        _movementData != null ? _movementData.airHorizontalAcceleration : 0f;
+
+    private float JumpReleaseUpwardMultiplier =>
+        _movementData != null ? _movementData.jumpReleaseUpwardMultiplier : 1f;
+
+    private float WallSlideDownSpeed =>
+        _movementData != null ? _movementData.wallSlideDownSpeed : wallSlideDownSpeedFallback;
+
+    /// <summary>발이 떨어진 뒤 코요테로 허용되는 추가 점프 1회(연속 코요테 악용 방지).</summary>
+    private bool _coyoteJumpConsumed;
+
     private void Awake()
     {
         if (rb == null)
@@ -109,8 +126,32 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (WasJumpPressedThisFrame())
             _jumpInputBufferedUntil = Time.time + InputBufferDuration;
+
+        ApplyJumpReleaseCut();
+    }
+
+    private static bool WasJumpPressedThisFrame()
+    {
+        return Input.GetButtonDown("Jump") || Input.GetKeyDown(KeyCode.Space);
+    }
+
+    private void ApplyJumpReleaseCut()
+    {
+        float mult = JumpReleaseUpwardMultiplier;
+        if (mult >= 0.999f || mult <= 0f)
+            return;
+
+        if (!Input.GetButtonUp("Jump") && !Input.GetKeyUp(KeyCode.Space))
+            return;
+
+        Vector2 v = rb.linearVelocity;
+        if (v.y <= 0f)
+            return;
+
+        v.y *= mult;
+        rb.linearVelocity = v;
     }
 
     private void FixedUpdate()
@@ -137,7 +178,10 @@ public class PlayerMovement2D : MonoBehaviour
 
         bool floorGrounded = EvaluateFloorGrounded(out _);
         if (floorGrounded)
+        {
             _lastFloorGroundedTime = Time.time;
+            _coyoteJumpConsumed = false;
+        }
 
         float hRaw = Input.GetAxisRaw("Horizontal");
         float hForWall = ApplyWallJumpInputLock(hRaw);
@@ -224,11 +268,11 @@ public class PlayerMovement2D : MonoBehaviour
             RestoreGravityScale();
 
         float h = ApplyWallJumpInputLock(hRaw);
-        ApplyHorizontalMove(h);
+        ApplyHorizontalMove(h, airStyle: false);
 
         bool coyoteOk = (Time.time - _lastFloorGroundedTime) <= CoyoteDuration;
-        bool canJump = floorGrounded || coyoteOk;
-        TryNormalJump(canJump);
+        bool canJump = floorGrounded || (coyoteOk && !_coyoteJumpConsumed);
+        TryNormalJump(canJump, floorGrounded, coyoteOk);
     }
 
     private void TickAir(bool floorGrounded, float hRaw)
@@ -237,11 +281,11 @@ public class PlayerMovement2D : MonoBehaviour
             RestoreGravityScale();
 
         float h = ApplyWallJumpInputLock(hRaw);
-        ApplyHorizontalMove(h);
+        ApplyHorizontalMove(h, airStyle: true);
 
         bool coyoteOk = (Time.time - _lastFloorGroundedTime) <= CoyoteDuration;
-        bool canJump = floorGrounded || coyoteOk;
-        TryNormalJump(canJump);
+        bool canJump = floorGrounded || (coyoteOk && !_coyoteJumpConsumed);
+        TryNormalJump(canJump, floorGrounded, coyoteOk);
     }
 
     private void TickWallClimb(WallProbe wallProbe)
@@ -253,11 +297,14 @@ public class PlayerMovement2D : MonoBehaviour
         if (TryWallJump(side))
             return;
 
-        float vy = 0f;
-        if (Input.GetKey(KeyCode.W))
+        float vAxis = ReadVerticalAxisRaw();
+        float vy;
+        if (vAxis > inputDeadZone)
             vy = wallClimbSpeed;
-        else if (Input.GetKey(KeyCode.S))
+        else if (vAxis < -inputDeadZone)
             vy = -wallClimbSpeed;
+        else
+            vy = WallSlideDownSpeed;
 
         Vector2 v = rb.linearVelocity;
         v.x = 0f;
@@ -288,7 +335,7 @@ public class PlayerMovement2D : MonoBehaviour
         return true;
     }
 
-    private void TryNormalJump(bool canJump)
+    private void TryNormalJump(bool canJump, bool floorGrounded, bool coyoteOk)
     {
         bool localBuffered = _jumpInputBufferedUntil > Time.time;
         bool blinkBuffered = blinkController != null && blinkController.HasBufferedJumpInput();
@@ -305,6 +352,14 @@ public class PlayerMovement2D : MonoBehaviour
         Vector2 v = rb.linearVelocity;
         v.y = jumpVelocity;
         rb.linearVelocity = v;
+
+        if (!floorGrounded && coyoteOk)
+            _coyoteJumpConsumed = true;
+    }
+
+    private static float ReadVerticalAxisRaw()
+    {
+        return Input.GetAxisRaw("Vertical");
     }
 
     private float ApplyWallJumpInputLock(float hRaw)
@@ -320,14 +375,31 @@ public class PlayerMovement2D : MonoBehaviour
         return hRaw;
     }
 
-    private void ApplyHorizontalMove(float h)
+    private void ApplyHorizontalMove(float h, bool airStyle)
     {
         if (Mathf.Abs(h) < inputDeadZone)
             h = 0f;
 
-        Vector2 v = rb.linearVelocity;
-        v.x = h * moveSpeed;
-        rb.linearVelocity = v;
+        float targetVx = h * moveSpeed;
+        if (airStyle)
+            targetVx *= AirHorizontalSpeedMultiplier;
+
+        float accel = airStyle ? AirHorizontalAcceleration : 0f;
+        if (airStyle && accel > 0f)
+        {
+            float vx = Mathf.MoveTowards(
+                rb.linearVelocity.x,
+                targetVx,
+                accel * Time.fixedDeltaTime);
+            Vector2 v = rb.linearVelocity;
+            v.x = vx;
+            rb.linearVelocity = v;
+            return;
+        }
+
+        Vector2 vel = rb.linearVelocity;
+        vel.x = targetVx;
+        rb.linearVelocity = vel;
     }
 
     private void RestoreGravityScale()

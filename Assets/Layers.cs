@@ -33,4 +33,7 @@ public static class Layers
     public static readonly int EmbedSurfaceMask =
         (1 << LayerMask.NameToLayer("Wall")) |
         (1 << LayerMask.NameToLayer("Ground"));
+
+    /// <summary>LayerMask에 특정 레이어가 포함되는지 (산나비 모작 Extension.Contain 대응).</summary>
+    public static bool MaskContains(LayerMask mask, int layer) => GameExtensions.ContainsLayer(mask, layer);
 }
