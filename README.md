@@ -10,3 +10,5 @@
 * [📅 2026-04-01: 코드 리팩토링2](./docs/devlog/2026-04-01_Code_Repactoring2.md)
 
 * [📅 2026-04-01: FSM 안정화 및 전투 입력](./docs/devlog/2026-04-01_Blink_Grab_Slam.md)
+
+* [📅 2026-04-02: FSM 안정화 및 전투 입력](./docs/devlog/2026-04-02_Boss_Story_Audio.md)
