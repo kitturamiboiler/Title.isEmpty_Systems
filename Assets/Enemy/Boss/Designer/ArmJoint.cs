@@ -43,7 +43,7 @@ public class ArmJoint : MonoBehaviour, IGrabbable
     public int       CurrentLives => _isBroken ? 0 : 1;
     public float     MaxHealth    => 1f;
     public float     CurrentHealth => _isBroken ? 0f : 1f;
-    public GameObject gameObject  => base.gameObject;
+    public new GameObject gameObject => base.gameObject;
 
     public void TakeDamage(float damage)  { } // 관절은 슬램으로만 파괴
 
