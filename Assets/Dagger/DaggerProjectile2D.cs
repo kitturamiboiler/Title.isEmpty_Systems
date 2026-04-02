@@ -37,6 +37,12 @@ public class DaggerProjectile2D : ProjectileBase2D
     /// <summary>적에게 적중했는지 여부 (연출·추가 로직용).</summary>
     public bool HitEnemy { get; private set; }
 
+    /// <summary>
+    /// DesignerUmbrella가 반사한 상태.
+    /// true이면 PlayerBlinkController2D.TryBlinkToDagger()가 블링크를 거부한다.
+    /// </summary>
+    public bool IsReflected { get; private set; }
+
     // -------------------------------------------------------------------------
     // Unity 콜백
     // -------------------------------------------------------------------------
@@ -67,10 +73,11 @@ public class DaggerProjectile2D : ProjectileBase2D
         if (_blinkCtrl == null)
             _blinkCtrl = Object.FindFirstObjectByType<PlayerBlinkController2D>();
 
-        _canBlink = true;
+        _canBlink   = true;
         IsStuckToWall = false;
-        HitEnemy = false;
-        _embedded = false;
+        HitEnemy    = false;
+        IsReflected = false;
+        _embedded   = false;
         LastHitNormal = Vector2.up;
 
         if (daggerCollider != null)
@@ -176,6 +183,32 @@ public class DaggerProjectile2D : ProjectileBase2D
     // -------------------------------------------------------------------------
     // 내부 헬퍼
     // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// DesignerUmbrella에서 호출. 단검을 newDirection 방향으로 반사하고 블링크 불가 상태로 전환.
+    /// 반사된 단검은 플레이어 방향으로 날아가 위협이 된다.
+    /// </summary>
+    public void Reflect(Vector2 newDirection)
+    {
+        if (_embedded || IsReflected) return;
+
+        IsReflected = true;
+        _canBlink   = false; // 블링크 대상에서 즉시 제외
+
+        if (rb != null)
+        {
+            rb.bodyType       = RigidbodyType2D.Dynamic;
+            rb.linearVelocity = newDirection.normalized * (weaponData != null ? weaponData.speed : 12f);
+        }
+
+        if (daggerCollider != null)
+            daggerCollider.enabled = true;
+
+        if (trailRenderer != null)
+            trailRenderer.emitting = true;
+
+        // TODO(기획): 반사 이펙트 스폰 — 2026-04-02
+    }
 
     private bool IsEmbedSurface(int layer)
     {

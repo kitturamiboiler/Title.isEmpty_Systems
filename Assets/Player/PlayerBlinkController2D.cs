@@ -29,6 +29,16 @@ public class PlayerBlinkController2D : MonoBehaviour
     [Tooltip("블링크 잔상 LineRenderer용 머티리얼. 비워두면 Awake에서 Sprites/Default로 자동 생성.")]
     [SerializeField] private Material _blinkTrailMaterial;
 
+    /// <summary>
+    /// 블링크 성공 시 도착 좌표(World) 브로드캐스트.
+    /// Shadow 보스의 BlinkGhostMarker 스폰, 잔상 퍼즐 트리거에 사용.
+    /// </summary>
+    /// <summary>
+    /// 블링크 실행 완료 시 발화. 인자: (출발지, 도착지).
+    /// Shadow 보스 잔상 퍼즐, TriggerCutscene 블링크 스킵 감지에서 구독.
+    /// </summary>
+    public System.Action<Vector2, Vector2> OnBlinkExecuted;
+
     /// <summary>Grab 전이 연결용. 같은 GameObject의 PlayerStateMachine을 Awake에서 캐싱.</summary>
     private PlayerStateMachine _stateMachine;
 
@@ -117,6 +127,12 @@ public class PlayerBlinkController2D : MonoBehaviour
 
     /// <summary>현재 비행 중인 단검. BlinkState가 소멸 감지에 사용.</summary>
     public DaggerProjectile2D CurrentDagger => currentDagger;
+
+    /// <summary>
+    /// true일 때 ThrowDagger() 내부의 ChangeState(Blink) 호출을 억제한다.
+    /// PlayerBoundState가 Enter 시 true로 설정하고 Exit 시 반드시 false로 복구해야 한다.
+    /// </summary>
+    public bool SuppressStateChangeOnThrow { get; set; }
 
     private void Update()
     {
@@ -225,7 +241,8 @@ public class PlayerBlinkController2D : MonoBehaviour
             // 투척 성공 시 쿨타임 갱신 + BlinkState 전이
             _lastThrowTime = Time.time;
 
-            if (_stateMachine != null)
+            // PlayerBoundState 활성 중에는 BlinkState 전이 억제 (구속 탈출 전용 흐름 유지)
+            if (_stateMachine != null && !SuppressStateChangeOnThrow)
                 _stateMachine.ChangeState(_stateMachine.Blink);
         }
     }
@@ -238,6 +255,10 @@ public class PlayerBlinkController2D : MonoBehaviour
     public bool TryBlinkToDagger()
     {
         if (currentDagger == null || !currentDagger.CanBlink)
+            return false;
+
+        // 설계자 우산에 반사된 단검 — 블링크 원천 차단
+        if (currentDagger.IsReflected)
             return false;
 
         bool isInAir = IsAirborneForBlinkRules();
@@ -288,6 +309,10 @@ public class PlayerBlinkController2D : MonoBehaviour
         // 단검은 즉시 파괴(회수)
         Destroy(currentDagger.gameObject);
         currentDagger = null;
+
+        // Shadow 보스 잔상 퍼즐, TriggerCutscene 블링크 스킵 감지에서 구독.
+        OnBlinkExecuted?.Invoke(startPos, finalPos);
+
         return true;
     }
 
@@ -461,6 +486,16 @@ public class PlayerBlinkController2D : MonoBehaviour
     private void ResetAirBlinkCount()
     {
         currentAirBlinkCount = maxAirBlinkCount;
+    }
+
+    /// <summary>
+    /// 패리 성공 시 PlayerParryController2D가 호출.
+    /// 공중 블링크 게이지를 amount만큼 충전 (최대치 초과 불가).
+    /// </summary>
+    public void RefillAirBlink(int amount = 1)
+    {
+        if (amount <= 0) return;
+        currentAirBlinkCount = Mathf.Min(currentAirBlinkCount + amount, maxAirBlinkCount);
     }
 
     private void ClearBufferedInputs()

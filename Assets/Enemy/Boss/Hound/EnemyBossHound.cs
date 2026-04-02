@@ -29,6 +29,12 @@ public class EnemyBossHound : BossStateMachine
     [SerializeField] private float _clawRange    = 1.8f;
     [SerializeField] private float _clawCooldown = 0.5f;
 
+    [Header("Hound — Phase 2 Shockwave")]
+    [Tooltip("충격파 발사 전 전조 시간(초).")]
+    [SerializeField] private float _shockwaveTelegraphTime = 0.8f;
+    [Tooltip("충격파 발사 후 피스톤 노출까지 대기 시간(초).")]
+    [SerializeField] private float _shockwaveWaitAfter     = 1.2f;
+
     // ─── 하운드 전용 State ────────────────────────────────────────────────────
 
     /// <summary>수평 돌진 패턴.</summary>
@@ -36,6 +42,9 @@ public class EnemyBossHound : BossStateMachine
 
     /// <summary>근접 할퀴기 콤보.</summary>
     public HoundClawState        HoundClaw        { get; private set; }
+
+    /// <summary>Phase 2 진입 직후 충격파 압박.</summary>
+    public HoundShockwaveState    HoundShockwave    { get; private set; }
 
     /// <summary>Phase 2 피스톤 노출 + 그랩 대기.</summary>
     public HoundExposePistonState HoundExposePiston { get; private set; }
@@ -80,6 +89,7 @@ public class EnemyBossHound : BossStateMachine
     {
         HoundCharge       = new HoundChargeState(this);
         HoundClaw         = new HoundClawState(this);
+        HoundShockwave    = new HoundShockwaveState(this);
         HoundExposePiston = new HoundExposePistonState(this);
         HoundFrenzy       = new HoundFrenzyState(this);
     }
@@ -94,8 +104,8 @@ public class EnemyBossHound : BossStateMachine
         switch (newPhase)
         {
             case BossPhase.Phase2:
-                // Phase 2 진입: 피스톤 노출 시퀀스 시작
-                ChangeState(HoundExposePiston);
+                // Phase 2 진입: 먼저 충격파로 압박 → 이후 피스톤 노출
+                ChangeState(HoundShockwave);
                 break;
 
             case BossPhase.Phase3:
@@ -129,6 +139,9 @@ public class EnemyBossHound : BossStateMachine
         foreach (var piston in _pistons)
             piston?.SetExposed(exposed);
     }
+
+    public float ShockwaveTelegraphTime => _shockwaveTelegraphTime;
+    public float ShockwaveWaitAfter     => _shockwaveWaitAfter;
 
     /// <summary>현재 Phase 속도 배율 적용된 Charge 속도.</summary>
     public float GetChargeSpeed()

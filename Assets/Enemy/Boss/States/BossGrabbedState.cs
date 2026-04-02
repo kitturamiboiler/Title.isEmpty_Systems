@@ -32,6 +32,9 @@ public class BossGrabbedState : BossState
         // 수평 충격 잔상 제거
         Machine.Rb.linearVelocity = Vector2.zero;
 
+        // 그랩 반응 대사
+        Machine.GetComponent<BossCombatDialogue>()?.TriggerReaction(BossCombatDialogue.ReactionType.PlayerGrabbed);
+
         // Kinematic 전환 → 물리 엔진이 위치를 덮어쓰지 않도록 차단
         Machine.Rb.bodyType = RigidbodyType2D.Kinematic;
     }

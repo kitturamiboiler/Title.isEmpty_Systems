@@ -28,6 +28,12 @@ public class BossParryableProjectile2D : MonoBehaviour
     /// <summary>현재 패리 가능 여부. Deflect() 호출 후 false가 된다.</summary>
     public bool IsParryable { get; private set; }
 
+    /// <summary>
+    /// Deflect() 이후 true. 편향된 투사체만 드론·보스에게 데미지를 준다.
+    /// 발사 직후 false — 보스 측 아군 판정 충돌 방지.
+    /// </summary>
+    public bool IsDeflected { get; private set; }
+
     // ─── Private ──────────────────────────────────────────────────────────────
 
     private Rigidbody2D _rb;
@@ -82,18 +88,30 @@ public class BossParryableProjectile2D : MonoBehaviour
         }
         if (_rb == null) return;
 
-        IsParryable = false;
+        IsParryable  = false;
+        IsDeflected  = true;
 
         Vector2 dir = newDirection ?? -_rb.linearVelocity.normalized;
         _rb.linearVelocity = dir.normalized * _speed;
 
         OnDeflected?.Invoke();
+
+        // 패리 반응 대사 — 이 투사체를 쏜 보스의 BossCombatDialogue에 알림
+        var bossDialogue = GetComponentInParent<BossCombatDialogue>()
+                        ?? Object.FindFirstObjectByType<BossCombatDialogue>();
+        bossDialogue?.TriggerReaction(BossCombatDialogue.ReactionType.PlayerParried);
     }
 
     // ─── 충돌 ─────────────────────────────────────────────────────────────────
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // 가설 2 방어: 편향탄·일반탄 모두 상대방 보스 투사체를 무시한다.
+        // → 아군 탄환끼리 상쇄되는 팀 식별 오류 차단.
+        // Unity Physics Layer Matrix로도 해결 가능하나, 코드 명시가 인스펙터 설정보다 견고하다.
+        if (other.GetComponent<BossProjectile2D>()        != null) return;
+        if (other.GetComponent<BossParryableProjectile2D>() != null) return;
+
         int layer = other.gameObject.layer;
 
         // 지형 충돌 → 파괴
@@ -106,8 +124,22 @@ public class BossParryableProjectile2D : MonoBehaviour
         // 무적 플레이어 무시
         if (layer == Layers.PlayerInvincible) return;
 
-        // 플레이어 충돌
-        if (layer == Layers.Player)
+        // 편향 후 적(드론·보스) 충돌 — IsDeflected일 때만 적용
+        if (IsDeflected && layer == Layers.Enemy)
+        {
+            // 보스 본체면 ArmorDamage, 아니면 일반 TakeDamage (드론 등)
+            var bossHealth = other.GetComponentInParent<BossHealth>();
+            if (bossHealth != null)
+                bossHealth.TakeArmorDamage(_damage);
+            else
+                other.GetComponentInParent<IHealth>()?.TakeDamage(_damage);
+
+            Destroy(gameObject);
+            return;
+        }
+
+        // 플레이어 충돌 (편향되지 않은 원본 투사체만)
+        if (!IsDeflected && layer == Layers.Player)
         {
             other.GetComponentInParent<IHealth>()?.TakeDamage(_damage);
             Destroy(gameObject);

@@ -74,6 +74,26 @@ public class WeaponData : ScriptableObject
     [Tooltip("착지 충격파 범위(유닛). 주변 적 범위 데미지 반경.")]
     public float slamRadius = 2.5f;
 
+    [Header("Parry (PlayerParryController2D)")]
+    [Tooltip("패리 판정 반지름. 플레이어 중심 기준 OverlapCircle 반경.")]
+    public float parryRadius = 1.2f;
+
+    [Tooltip("패리 버튼 입력 후 판정이 유지되는 시간 (초). 너무 길면 연타 패널티 실종.")]
+    public float parryActiveDuration = 0.12f;
+
+    [Tooltip("패리 성공·실패 후 재사용 대기 시간 (초).")]
+    public float parryCooldown = 0.5f;
+
+    [Tooltip("패리 성공 1회당 공중 블링크 충전량. 1 = 블링크 1회 회복.")]
+    public int parryAirBlinkRefill = 1;
+
+    [Tooltip("패리 성공 시 HitStop 요청 시간 (초).")]
+    public float parryHitStopDuration = 0.06f;
+
+    [Tooltip("패리 성공 시 HitStop timeScale.")]
+    [Range(0.01f, 1f)]
+    public float parryHitStopTimeScale = 0.05f;
+
     [Header("Prefabs")]
     public GameObject daggerProjectilePrefab; // 2D 단검 투사체 프리팹
 }
