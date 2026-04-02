@@ -13,5 +13,5 @@ Advanced 2D Blink Mechanics with Hit-stop, I-frame, and Normal-offset in Unity.
 
 | 기능 (Feature) | 브랜치명 | 바로가기 | 상태 |
 | :--- | :--- | :---: | :---: |
-| **Unity Base** | `feature/Unity` | [이동하기 🚀](https://github.com/kitturamiboiler/Title.isEmpty_Systems/tree/feature/Unity?tab=readme-ov-file) | 진행 중 |
-| **Dagger System** | `feature/dagger-system` | [이동하기 🔪](https://github.com/kitturamiboiler/Title.isEmpty_Systems/tree/feature/dagger-system?tab=readme-ov-file) | 진행 중 |
+| **Unity Base** | `feature/Unity` | [이동](https://github.com/kitturamiboiler/Title.isEmpty_Systems/tree/feature/Unity?tab=readme-ov-file) | 진행 중 |
+| **Dagger System** | `feature/dagger-system` | [이동](https://github.com/kitturamiboiler/Title.isEmpty_Systems/tree/feature/dagger-system?tab=readme-ov-file) | 진행 중 |
