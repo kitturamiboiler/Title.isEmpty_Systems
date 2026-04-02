@@ -70,17 +70,31 @@ public class BossCombatDialogue : MonoBehaviour
     private float _lastGrabbedTime    = -999f;
     private float _lastVulnerableTime = -999f;
 
-    private int _lastParryIndex     = -1;
-    private int _lastGrabIndex      = -1;
+    private int _lastParryIndex      = -1;
+    private int _lastGrabIndex       = -1;
     private int _lastVulnerableIndex = -1;
-    private int _lastPhase1Index    = -1;
-    private int _lastPhase2Index    = -1;
+    private int _lastPhase1Index     = -1;
+    private int _lastPhase2Index     = -1;
+
+    // H2: 사망 경합 방어 — BossHealth 캐싱
+    private BossHealth _bossHealth;
+
+    // ─── Unity ────────────────────────────────────────────────────────────────
+
+    private void Awake()
+    {
+        _bossHealth = GetComponent<BossHealth>();
+    }
 
     // ─── Public API ───────────────────────────────────────────────────────────
 
     /// <summary>페이즈 전환 시 BossStateMachine.OnPhaseChanged에서 호출.</summary>
     public void TriggerPhase(BossPhase phase)
     {
+        // 사망 후 페이즈 전환은 허용 (예: 설계자 마지막 대사 등)
+        // 단, Phase1/2 전환 자체가 사망과 동시에 일어나는 경우 방어
+        if (_bossHealth != null && _bossHealth.IsDead) return;
+
         switch (phase)
         {
             case BossPhase.Phase1:
@@ -95,6 +109,9 @@ public class BossCombatDialogue : MonoBehaviour
     /// <summary>플레이어 행동 감지 시 각 State에서 호출.</summary>
     public void TriggerReaction(ReactionType type)
     {
+        // H2: 보스가 이미 사망했으면 모든 반응 대사 차단 (서사적 모순 방지)
+        if (_bossHealth != null && _bossHealth.IsDead) return;
+
         switch (type)
         {
             case ReactionType.PlayerParried:
@@ -115,6 +132,40 @@ public class BossCombatDialogue : MonoBehaviour
                 FireSet(_onBossVulnerable, ref _lastVulnerableIndex);
                 break;
         }
+    }
+
+    // ─── 공개 주입 API (BossDialogueLoader에서 StoryDatabase 데이터 주입) ──────
+
+    /// <summary>Phase1 진입 대사 배열을 런타임에 덮어쓴다.</summary>
+    public void OverridePhase1Lines(string speaker, string[] lines)
+    {
+        if (_phase1Dialogue == null) _phase1Dialogue = new DialogueSet();
+        _phase1Dialogue.speaker = speaker;
+        _phase1Dialogue.lines   = lines;
+    }
+
+    /// <summary>Phase2 진입 대사 배열을 런타임에 덮어쓴다.</summary>
+    public void OverridePhase2Lines(string speaker, string[] lines)
+    {
+        if (_phase2Dialogue == null) _phase2Dialogue = new DialogueSet();
+        _phase2Dialogue.speaker = speaker;
+        _phase2Dialogue.lines   = lines;
+    }
+
+    /// <summary>패리 반응 대사 배열을 런타임에 덮어쓴다.</summary>
+    public void OverrideParriedLines(string speaker, string[] lines)
+    {
+        if (_onPlayerParried == null) _onPlayerParried = new DialogueSet();
+        _onPlayerParried.speaker = speaker;
+        _onPlayerParried.lines   = lines;
+    }
+
+    /// <summary>그랩 반응 대사 배열을 런타임에 덮어쓴다.</summary>
+    public void OverrideGrabbedLines(string speaker, string[] lines)
+    {
+        if (_onPlayerGrabbed == null) _onPlayerGrabbed = new DialogueSet();
+        _onPlayerGrabbed.speaker = speaker;
+        _onPlayerGrabbed.lines   = lines;
     }
 
     // ─── Private ──────────────────────────────────────────────────────────────

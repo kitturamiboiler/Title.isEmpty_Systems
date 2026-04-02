@@ -82,6 +82,9 @@ public class BossHealth : MonoBehaviour, IGrabbable
     private bool  _isDead;
     private bool  _isLockedForGrab;
 
+    /// <summary>보스가 사망 처리된 상태. BossCombatDialogue 등 외부 가드용.</summary>
+    public bool IsDead => _isDead;
+
     // 가설 3: 아머 재생 타이머. TakeArmorDamage 호출 시 갱신.
     private float _lastArmorDamageTime = float.NegativeInfinity;
 

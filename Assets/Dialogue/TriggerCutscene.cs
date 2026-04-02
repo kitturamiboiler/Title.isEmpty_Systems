@@ -176,6 +176,12 @@ public class TriggerCutscene : MonoBehaviour
             );
         }
 
+        // H3: 증분 저장 — 이 트리거 도달 = 직전 챕터까지 전부 완료된 것.
+        // MarkUpToChapter로 1~(N-1) 전체를 한 번에 저장하여 연속 스킵권 보장.
+        // 강제 종료 시에도 재시작하면 최소 '여기까지' 스킵 가능.
+        if (_chapterIndex > 1)
+            PlaythroughTracker.MarkUpToChapter(_chapterIndex - 1);
+
         if (_delay > 0f)
             StartCoroutine(DelayedFire());
         else
@@ -249,6 +255,22 @@ public class TriggerCutscene : MonoBehaviour
                 Debug.LogWarning("[TriggerCutscene] CombatDialogueUI.Instance가 없습니다.");
             }
         }
+    }
+
+    // ─── 공개 주입 API (ChapterStoryLoader 등 외부에서 사용) ──────────────────
+
+    /// <summary>
+    /// 런타임에서 컷씬 라인을 덮어쓴다.
+    /// ChapterStoryLoader가 StoryDatabase 데이터를 주입할 때 사용.
+    /// </summary>
+    public void OverrideCutsceneLines(List<CutsceneLine> lines)
+    {
+        if (lines == null || lines.Count == 0)
+        {
+            Debug.LogWarning($"[TriggerCutscene] {gameObject.name}: OverrideCutsceneLines에 빈 리스트가 전달되었습니다.");
+            return;
+        }
+        _cutsceneLines = lines.ToArray();
     }
 
     // ─── Editor 기즈모 ────────────────────────────────────────────────────────

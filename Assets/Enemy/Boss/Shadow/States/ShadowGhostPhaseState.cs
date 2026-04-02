@@ -20,9 +20,9 @@ public class ShadowGhostPhaseState : BossState
 {
     private readonly EnemyBossShadow _shadow;
 
-    private bool  _triggered;
+    private bool _triggered;
     private float _timer;
-    private int   _requiredSwitches;
+    private int _requiredSwitches;
 
     public ShadowGhostPhaseState(BossStateMachine machine) : base(machine)
     {
@@ -34,7 +34,7 @@ public class ShadowGhostPhaseState : BossState
     public override void Enter()
     {
         _triggered = false;
-        _timer     = 0f;
+        _timer = 0f;
 
         if (_shadow == null)
         {
