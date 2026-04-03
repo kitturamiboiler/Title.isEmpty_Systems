@@ -38,6 +38,6 @@ Advanced 2D Blink Mechanics with Hit-stop, I-frame, and Normal-offset in Unity.
 | **Audio / SFX** | ![5%](https://img.shields.io/badge/5%25-A32D2D) | 🔈 Planning |
 
 ### 👾 Boss Development Status
-- 🐺 **하운드 (Hound):** `[██████░░░░]` 60% (로직 완료 / 연출 작업 중)
-- 📄 **서류 (Document):** `[█████████░]` 90% (코드 완성)
-- 👤 **그림자 (Shadow):** `[█████████░]` 90% (코드 완성)
+-  **하운드 (Hound):** `[██████░░░░]` 60% (로직 완료 / 연출 작업 중)
+-  **서류 (Document):** `[█████████░]` 90% (코드 완성)
+-  **그림자 (Shadow):** `[█████████░]` 90% (코드 완성)
