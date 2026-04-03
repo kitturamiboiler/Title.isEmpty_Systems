@@ -22,6 +22,8 @@ Advanced 2D Blink Mechanics with Hit-stop, I-frame, and Normal-offset in Unity.
 
 현재 프로젝트의 실시간 개발 현황입니다. 자세한 내용은 위 **Visit Dashboard** 버튼을 클릭하세요.
 
+[![Visit Site](https://img.shields.io/badge/LIVE_DEMO-Visit_Dashboard-1D9E75?style=for-the-badge&logo=github)](https://kitturamiboiler.github.io/)
+
 ### 📈 Overall Progress
 ![Total Progress](https://geps.dev/progress/34)  
 > **현재 목표:** Phase 1 (플레이어블 데모) 완성 및 하운드 보스 연출 최적화
