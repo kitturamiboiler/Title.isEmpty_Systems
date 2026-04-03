@@ -13,4 +13,4 @@
 
 * [📅 2026-04-02: Boss 설계, 엔딩 크레딧 설계](./docs/devlog/2026-04-02_Boss_Story_Audio.md)
 
-* [📅 2026-04-02: Unity_Error_Fix](./docs/devlog/2026-04-03_Unity_Error_Fix.md)
+* [📅 2026-04-03: Unity_Error_Fix](./docs/devlog/2026-04-03_Unity_Error_Fix.md)
