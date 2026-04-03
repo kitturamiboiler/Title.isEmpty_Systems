@@ -48,6 +48,7 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip _sfxParry;
     [SerializeField] private AudioClip _sfxGrab;
     [SerializeField] private AudioClip _sfxSlam;
+    [SerializeField] private AudioClip _sfxDeath;
     [SerializeField] private AudioClip _sfxUmbrellaReflect;  // 설계자 우산 반사음
 
     [Header("설정")]
@@ -132,6 +133,7 @@ public class SoundManager : MonoBehaviour
     public void PlayParry()          => PlaySFX(_sfxParry);
     public void PlayGrab()           => PlaySFX(_sfxGrab);
     public void PlaySlam()           => PlaySFX(_sfxSlam);
+    public void PlayDeath()          => PlaySFX(_sfxDeath);
     public void PlayUmbrellaReflect() => PlaySFX(_sfxUmbrellaReflect);
 
     // ─── 챕터 BGM 단축 메서드 ────────────────────────────────────────────────

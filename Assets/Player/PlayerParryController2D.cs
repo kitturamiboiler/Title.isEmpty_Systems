@@ -171,7 +171,7 @@ public class PlayerParryController2D : MonoBehaviour
             _weaponData.parryHitStopTimeScale
         );
 
-        // TODO(작성자): 패리 성공 이펙트 / 사운드 트리거 — 2026-04-01
+        SoundManager.Instance?.PlayParry();
     }
 
     private void EndParryWindow(bool success)

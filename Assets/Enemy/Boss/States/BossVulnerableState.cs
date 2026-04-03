@@ -26,6 +26,8 @@ public class BossVulnerableState : BossState
 
         // 취약 상태 진입 반응 대사
         Machine.GetComponent<BossCombatDialogue>()?.TriggerReaction(BossCombatDialogue.ReactionType.BossVulnerable);
+
+        Machine.NotifyBossAnimVulnerable();
     }
 
     public override void Tick()

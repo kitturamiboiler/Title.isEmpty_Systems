@@ -18,6 +18,8 @@ public class DaggerProjectile2D : ProjectileBase2D
     /// <summary>PlayerBlinkController2D — Launch 시 1회 캐싱.</summary>
     private PlayerBlinkController2D _blinkCtrl;
 
+    private SimpleGameObjectPool _releasePool;
+
     // -------------------------------------------------------------------------
     // IProjectile2D 오버라이드
     // -------------------------------------------------------------------------
@@ -100,7 +102,7 @@ public class DaggerProjectile2D : ProjectileBase2D
         if (Vector2.Distance(LaunchOrigin, transform.position) > weaponData.maxDistance)
         {
             _canBlink = false;
-            Destroy(gameObject);
+            DespawnOrDestroy();
         }
     }
 
@@ -216,6 +218,23 @@ public class DaggerProjectile2D : ProjectileBase2D
             trailRenderer.emitting = true;
 
         // TODO(기획): 반사 이펙트 스폰 — 2026-04-02
+    }
+
+    /// <summary>풀 반환 대상이면 Release, 아니면 Destroy.</summary>
+    public void SetReleasePool(SimpleGameObjectPool pool) => _releasePool = pool;
+
+    /// <summary>블링크 회수·최대 사거리 등 외부에서 수명 종료 시 호출.</summary>
+    public void ReleaseToPoolOrDestroy() => DespawnOrDestroy();
+
+    private void DespawnOrDestroy()
+    {
+        if (_releasePool != null)
+        {
+            _releasePool.Release(gameObject);
+            return;
+        }
+
+        Destroy(gameObject);
     }
 
     private bool IsEmbedSurface(int layer)

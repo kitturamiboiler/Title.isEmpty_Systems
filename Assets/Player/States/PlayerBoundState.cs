@@ -99,6 +99,8 @@ public class PlayerBoundState : IState2D
             _originalColor         = _spriteRenderer.color;
             _spriteRenderer.color  = BOUND_COLOR;
         }
+
+        _machine.NotifyPlayerAnim(PlayerAnimHashes.Bound);
     }
 
     public void Tick()

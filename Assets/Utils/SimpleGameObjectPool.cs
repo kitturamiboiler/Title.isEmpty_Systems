@@ -8,6 +8,9 @@ using UnityEngine;
 public class SimpleGameObjectPool : MonoBehaviour
 {
     [SerializeField] private GameObject prefab;
+
+    /// <summary>풀에 등록된 프리팹 (검증·디버그용).</summary>
+    public GameObject PooledPrefab => prefab;
     [SerializeField] private int prewarmCount = 8;
     [SerializeField] private int maxCapacity = 64;
 

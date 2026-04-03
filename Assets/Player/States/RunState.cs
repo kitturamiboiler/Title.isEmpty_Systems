@@ -17,7 +17,10 @@ public class RunState : IState2D
         _machine = machine;
     }
 
-    public void Enter() { }
+    public void Enter()
+    {
+        _machine.NotifyPlayerAnim(PlayerAnimHashes.Run);
+    }
 
     public void Tick()
     {

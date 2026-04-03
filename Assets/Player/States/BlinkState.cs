@@ -28,7 +28,10 @@ public class BlinkState : IState2D
         {
             Debug.LogError("[BlinkState] PlayerBlinkController2D 레퍼런스가 없습니다. Idle로 즉시 복귀.");
             _machine.ChangeState(_machine.Idle);
+            return;
         }
+
+        _machine.NotifyPlayerAnim(PlayerAnimHashes.BlinkCombat);
     }
 
     public void Tick()
