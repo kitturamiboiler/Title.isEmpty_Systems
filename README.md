@@ -18,7 +18,7 @@ Advanced 2D Blink Mechanics with Hit-stop, I-frame, and Normal-offset in Unity.
 
 ---
 
-## 📊 Project Status (Umbrella-Under)
+## 📊 Project Status (Null)
 
 현재 프로젝트의 실시간 개발 현황입니다. 자세한 내용은 아래 **Visit Dashboard** 버튼을 클릭하세요.
 
