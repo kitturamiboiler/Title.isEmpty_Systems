@@ -15,3 +15,27 @@ Advanced 2D Blink Mechanics with Hit-stop, I-frame, and Normal-offset in Unity.
 | :--- | :--- | :---: | :---: |
 | **Unity Base** | `feature/Unity` | [이동](https://github.com/kitturamiboiler/Title.isEmpty_Systems/tree/feature/Unity?tab=readme-ov-file) | 진행 중 |
 | **Dagger System** | `feature/dagger-system` | [이동](https://github.com/kitturamiboiler/Title.isEmpty_Systems/tree/feature/dagger-system?tab=readme-ov-file) | 진행 중 |
+
+---
+
+## 📊 Project Status (Umbrella-Under)
+
+현재 프로젝트의 실시간 개발 현황입니다. 자세한 내용은 위 **Visit Dashboard** 버튼을 클릭하세요.
+
+### 📈 Overall Progress
+![Total Progress](https://geps.dev/progress/34)  
+> **현재 목표:** Phase 1 (플레이어블 데모) 완성 및 하운드 보스 연출 최적화
+
+### ⚙️ System Completion
+| System | Completion | Status |
+| :--- | :---: | :--- |
+| **Player FSM** | ![92%](https://img.shields.io/badge/92%25-1D9E75) | 🛠️ Refactoring |
+| **Dagger Blink** | ![95%](https://img.shields.io/badge/95%25-1D9E75) | ✅ Stable |
+| **Boss Framework** | ![90%](https://img.shields.io/badge/90%25-1D9E75) | ✅ Core Done |
+| **Art / Sprites** | ![10%](https://img.shields.io/badge/10%25-BA7517) | 🎨 Work in Progress |
+| **Audio / SFX** | ![5%](https://img.shields.io/badge/5%25-A32D2D) | 🔈 Planning |
+
+### 👾 Boss Development Status
+- 🐺 **하운드 (Hound):** `[██████░░░░]` 60% (로직 완료 / 연출 작업 중)
+- 📄 **서류 (Document):** `[█████████░]` 90% (코드 완성)
+- 👤 **그림자 (Shadow):** `[█████████░]` 90% (코드 완성)
