@@ -16,7 +16,10 @@ public class IdleState : IState2D
         _machine = machine;
     }
 
-    public void Enter() { }
+    public void Enter()
+    {
+        _machine.NotifyPlayerAnim(PlayerAnimHashes.Idle);
+    }
 
     public void Tick()
     {

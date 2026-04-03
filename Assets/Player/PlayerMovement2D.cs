@@ -34,7 +34,11 @@ public class PlayerMovement2D : MonoBehaviour
     [SerializeField] private float inputBufferTimeFallback = 0.1f;
 
     [Header("Ground Check (floor only)")]
+    [Tooltip("비우면 Layers.PlayerPhysicsGroundMask 사용.")]
     [SerializeField] private LayerMask groundMask;
+
+    private LayerMask EffectiveGroundMask =>
+        groundMask.value != 0 ? groundMask : Layers.PlayerPhysicsGroundMask;
     [SerializeField] private Vector2 groundCheckOffset = new Vector2(0f, 0f);
     [SerializeField] private Vector2 groundBoxSize = new Vector2(0.45f, 0.08f);
     [Tooltip("MovementData 없을 때 BoxCast 거리.")]
@@ -463,8 +467,6 @@ public class PlayerMovement2D : MonoBehaviour
     private bool EvaluateFloorGrounded(out RaycastHit2D bestHit)
     {
         bestHit = default;
-        if (groundMask.value == 0)
-            return false;
 
         float castDist  = _movementData != null ? _movementData.groundBoxCastDistance   : groundCastDistanceFallback;
         float minNy     = _movementData != null ? _movementData.groundMinFloorNormalY    : minFloorNormalYFallback;
@@ -486,7 +488,7 @@ public class PlayerMovement2D : MonoBehaviour
             0f,
             Vector2.down,
             castDist,
-            groundMask,
+            EffectiveGroundMask,
             -Mathf.Infinity,
             Mathf.Infinity);
 
@@ -504,14 +506,14 @@ public class PlayerMovement2D : MonoBehaviour
             Vector2 right = new Vector2(b.max.x - cornerInset, footY) + (Vector2)groundCheckOffset;
             float rayLen  = castDist + Mathf.Abs(lift) + groundBoxSize.y * 0.5f;
 
-            hit = Physics2D.Raycast(left, Vector2.down, rayLen, groundMask);
+            hit = Physics2D.Raycast(left, Vector2.down, rayLen, EffectiveGroundMask);
             if (hit.collider != null && hit.normal.y >= minNy)
             {
                 bestHit = hit;
                 return true;
             }
 
-            hit = Physics2D.Raycast(right, Vector2.down, rayLen, groundMask);
+            hit = Physics2D.Raycast(right, Vector2.down, rayLen, EffectiveGroundMask);
             if (hit.collider != null && hit.normal.y >= minNy)
             {
                 bestHit = hit;

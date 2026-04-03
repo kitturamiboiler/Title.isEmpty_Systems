@@ -14,3 +14,7 @@
 * [📅 2026-04-02: Boss 설계, 엔딩 크레딧 설계](./docs/devlog/2026-04-02_Boss_Story_Audio.md)
 
 * [📅 2026-04-03: Unity_Error_Fix](./docs/devlog/2026-04-03_Unity_Error_Fix.md)
+
+* [📅 2026-04-03: 컴파일·Safe Mode 에러 수정](./docs/devlog/2026-04-03_Compile_Errors_Fix.md)
+
+* [📅 2026-04-03: Ground 마스크·단검 풀·사운드·Animator 인프라](./docs/devlog/2026-04-03_Infra_Ground_Pool_Sound_Animator.md)

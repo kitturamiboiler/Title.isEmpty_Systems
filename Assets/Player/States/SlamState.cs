@@ -119,6 +119,8 @@ public class SlamState : IState2D
             _rb.position, Vector2.down, AIR_SLAM_FLOOR_THRESHOLD, _groundMask
         );
         _isAirSlam = (floorCheck.collider == null); // 바닥이 임계 거리 내에 없으면 에어 슬램
+
+        _machine.NotifyPlayerAnim(PlayerAnimHashes.Slam);
     }
 
     public void Tick()
@@ -279,6 +281,8 @@ public class SlamState : IState2D
             var juice = _machine != null ? _machine.GetComponent<SlamImpactJuice>() : null;
             juice?.PlaySquash(_weaponData);
         }
+
+        SoundManager.Instance?.PlaySlam();
 
         // 볼링핀 효과: 피해자를 가장 가까운 적 방향으로 날린 뒤 처치
         ApplyCollateralLaunch(impactPoint);

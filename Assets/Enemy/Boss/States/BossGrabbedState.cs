@@ -37,6 +37,8 @@ public class BossGrabbedState : BossState
 
         // Kinematic 전환 → 물리 엔진이 위치를 덮어쓰지 않도록 차단
         Machine.Rb.bodyType = RigidbodyType2D.Kinematic;
+
+        Machine.NotifyBossAnimGrabbed();
     }
 
     /// <summary>

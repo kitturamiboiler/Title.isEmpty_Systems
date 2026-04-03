@@ -99,6 +99,8 @@ public class PlayerHealth : MonoBehaviour, IHealth
         RestoreState();
         OnDied?.Invoke();
 
+        SoundManager.Instance?.PlayDeath();
+
         // TODO(작성자): 사망 연출·게임 오버 씬 전환 연결 — 날짜
         gameObject.SetActive(false);
     }

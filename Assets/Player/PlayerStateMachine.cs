@@ -15,9 +15,13 @@ using UnityEngine;
 public class PlayerStateMachine : MonoBehaviour, IBindable
 {
     [Header("Refs")]
-    [Tooltip("SlamState BoxCast 레이어. PlayerMovement2D.groundMask와 동일 레이어로 설정.")]
+    [Tooltip("비우면 Layers.PlayerPhysicsGroundMask 사용 (Movement와 동일 폴백).")]
     [SerializeField] private LayerMask _groundMask;
     [SerializeField] private WeaponData _weaponData;
+
+    [Header("Animator (optional)")]
+    [Tooltip("아트 미연결 시 비워두면 됨. PlayerAnimHashes 트리거명과 컨트롤러를 맞출 것.")]
+    [SerializeField] private Animator _animator;
 
     // -------------------------------------------------------------------------
     // State 접근자 (GrabState.SetTarget 등 외부 호출용)
@@ -59,10 +63,13 @@ public class PlayerStateMachine : MonoBehaviour, IBindable
         if (blinkCtrl == null)
             Debug.LogWarning($"[PlayerStateMachine] PlayerBlinkController2D가 없습니다 — {gameObject.name}");
 
+        LayerMask slamGround =
+            _groundMask.value != 0 ? _groundMask : Layers.PlayerPhysicsGroundMask;
+
         // 의존 순서: Idle 먼저 생성(SlamState가 참조) → Slam → Grab → Blink(blinkCtrl 필요)
         Idle  = new IdleState(this);
         Run   = new RunState(this);
-        Slam  = new SlamState(this, rb, col, _weaponData, _groundMask, blinkCtrl, Idle);
+        Slam  = new SlamState(this, rb, col, _weaponData, slamGround, blinkCtrl, Idle);
         Grab  = new GrabState(this, Slam, _weaponData);
         Blink = new BlinkState(this, blinkCtrl);
         Bound = new PlayerBoundState(this, rb, blinkCtrl);
@@ -125,5 +132,13 @@ public class PlayerStateMachine : MonoBehaviour, IBindable
     private void FixedUpdate()
     {
         CurrentState?.FixedTick();
+    }
+
+    /// <summary>플레이어 Animator 트리거. 해시는 <see cref="PlayerAnimHashes"/>.</summary>
+    /// <param name="triggerHash"><see cref="Animator.SetTrigger(int)"/>용 해시.</param>
+    public void NotifyPlayerAnim(int triggerHash)
+    {
+        if (_animator == null) return;
+        _animator.SetTrigger(triggerHash);
     }
 }

@@ -56,6 +56,9 @@ public class GrabState : IState2D
         // 그랩 순간 짧은 충격 셰이크 — '잡았다'는 손맛 피드백
         if (CameraShaker.Instance != null && _weaponData != null)
             CameraShaker.Instance.Shake(_weaponData.grabShakeDuration, _weaponData.grabShakeIntensity);
+
+        SoundManager.Instance?.PlayGrab();
+        _machine.NotifyPlayerAnim(PlayerAnimHashes.Grab);
     }
 
     public void Tick()

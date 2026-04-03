@@ -22,6 +22,13 @@ public static class Layers
     /// <summary>바닥 레이어.</summary>
     public static readonly int Ground          = LayerMask.NameToLayer("Ground");
 
+    /// <summary>
+    /// 플레이어 착지·슬램·블링크 지면 판정 공통 기본 마스크 (Ground 단일 비트).
+    /// 인스펙터 <c>groundMask</c>가 비어 있으면 Movement / FSM / Blink가 이 값을 폴백으로 사용한다.
+    /// </summary>
+    public static readonly LayerMask PlayerPhysicsGroundMask =
+        Ground >= 0 ? (LayerMask)(1 << Ground) : default;
+
     /// <summary>단검 투사체 레이어.</summary>
     public static readonly int Dagger          = LayerMask.NameToLayer("Dagger");
 

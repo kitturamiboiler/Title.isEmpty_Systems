@@ -18,8 +18,16 @@ public class PlayerBlinkController2D : MonoBehaviour
     [SerializeField] private Collider2D playerCollider;
 
     [Header("Ground / Wall Check")]
+    [Tooltip("비우면 Layers.PlayerPhysicsGroundMask 사용.")]
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private LayerMask wallMask;
+
+    [Header("Pooling (optional)")]
+    [Tooltip("SimpleGameObjectPool의 프리팹은 WeaponData.daggerProjectilePrefab과 동일해야 한다.")]
+    [SerializeField] private SimpleGameObjectPool _daggerPool;
+
+    private LayerMask EffectiveGroundMask =>
+        groundMask.value != 0 ? groundMask : Layers.PlayerPhysicsGroundMask;
 
     [Header("Air Blink Settings")]
     [SerializeField] private int maxAirBlinkCount = 1;
@@ -227,15 +235,26 @@ public class PlayerBlinkController2D : MonoBehaviour
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         Quaternion spawnRotation = Quaternion.Euler(0f, 0f, angle);
 
-        GameObject daggerObj = Instantiate(
-            weaponData.daggerProjectilePrefab,
-            firePosition,
-            spawnRotation
-        );
+        SimpleGameObjectPool poolForThrow = null;
+        if (_daggerPool != null)
+        {
+            if (_daggerPool.PooledPrefab == weaponData.daggerProjectilePrefab)
+                poolForThrow = _daggerPool;
+            else if (_daggerPool.PooledPrefab != null)
+            {
+                Debug.LogWarning(
+                    "[PlayerBlinkController2D] Dagger pool prefab ≠ WeaponData.daggerProjectilePrefab — Instantiate로 폴백.");
+            }
+        }
+
+        GameObject daggerObj = poolForThrow != null
+            ? poolForThrow.Get(firePosition, spawnRotation)
+            : Instantiate(weaponData.daggerProjectilePrefab, firePosition, spawnRotation);
 
         currentDagger = daggerObj.GetComponent<DaggerProjectile2D>();
         if (currentDagger != null)
         {
+            currentDagger.SetReleasePool(poolForThrow);
             currentDagger.Launch(firePosition, direction, weaponData);
 
             // 투척 성공 시 쿨타임 갱신 + BlinkState 전이
@@ -296,9 +315,11 @@ public class PlayerBlinkController2D : MonoBehaviour
         // 히트 스톱 & 검붉은 누아르 이펙트
         StartCoroutine(PerformHitStop());
 
-        // 단검은 즉시 파괴(회수)
-        Destroy(currentDagger.gameObject);
+        // 단검은 즉시 회수 (풀 또는 Destroy)
+        currentDagger.ReleaseToPoolOrDestroy();
         currentDagger = null;
+
+        SoundManager.Instance?.PlayBlink();
 
         // Shadow 보스 잔상 퍼즐, TriggerCutscene 블링크 스킵 감지에서 구독.
         OnBlinkExecuted?.Invoke(startPos, finalPos);
@@ -442,7 +463,7 @@ public class PlayerBlinkController2D : MonoBehaviour
         if (collision.gameObject.layer == Layers.Dagger) return;
 
         // OnCollisionEnter2D + LayerMask를 사용해 지면/벽 판정
-        if ((groundMask.value & layerBit) != 0)
+        if ((EffectiveGroundMask.value & layerBit) != 0)
         {
             isGrounded = true;
             isOnWall = false;
@@ -465,7 +486,7 @@ public class PlayerBlinkController2D : MonoBehaviour
         int layer = collision.gameObject.layer;
         int layerBit = 1 << layer;
 
-        if ((groundMask.value & layerBit) != 0)
+        if ((EffectiveGroundMask.value & layerBit) != 0)
         {
             isGrounded = false;
         }

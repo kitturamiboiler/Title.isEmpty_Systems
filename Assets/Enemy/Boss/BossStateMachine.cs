@@ -5,6 +5,19 @@ using UnityEngine;
 /// <summary>보스 전투 페이즈 (3단계). 수치 비교를 위해 int 기반.</summary>
 public enum BossPhase { Phase1 = 1, Phase2 = 2, Phase3 = 3 }
 
+/// <summary>보스 Animator용 해시. 컨트롤러에 Int <c>BossPhase</c>, Trigger <c>BossGrabbed</c>/<c>BossVulnerable</c> 등을 맞출 것.</summary>
+public static class BossAnimHashes
+{
+    /// <summary>정수 파라미터: 현재 페이즈 (enum 값과 동기).</summary>
+    public static readonly int Phase = Animator.StringToHash("BossPhase");
+
+    /// <summary>플레이어 그랩 반응.</summary>
+    public static readonly int Grabbed = Animator.StringToHash("BossGrabbed");
+
+    /// <summary>취약 창 진입.</summary>
+    public static readonly int Vulnerable = Animator.StringToHash("BossVulnerable");
+}
+
 // ─── BossStateMachine ────────────────────────────────────────────────────────
 
 /// <summary>
@@ -53,6 +66,9 @@ public abstract class BossStateMachine : MonoBehaviour, IBindable
     [SerializeField] protected Transform     _playerTransform;
     [SerializeField] protected Transform     _firePoint;
     [SerializeField] protected LayerMask     _groundMask;
+
+    [Header("Animator (optional)")]
+    [SerializeField] protected Animator _bossAnimator;
 
     [Header("Boss Ground Check")]
     [SerializeField] protected float _groundCheckDistance = 0.08f;
@@ -198,6 +214,28 @@ public abstract class BossStateMachine : MonoBehaviour, IBindable
         GetComponent<BossCombatDialogue>()?.TriggerPhase(newPhase);
 
         OnPhaseChanged(newPhase);
+        NotifyBossAnimPhase(newPhase);
+    }
+
+    /// <summary>Animator Int <see cref="BossAnimHashes.Phase"/> 동기화.</summary>
+    public void NotifyBossAnimPhase(BossPhase phase)
+    {
+        if (_bossAnimator == null) return;
+        _bossAnimator.SetInteger(BossAnimHashes.Phase, (int)phase);
+    }
+
+    /// <summary>Animator Trigger <see cref="BossAnimHashes.Grabbed"/>.</summary>
+    public void NotifyBossAnimGrabbed()
+    {
+        if (_bossAnimator == null) return;
+        _bossAnimator.SetTrigger(BossAnimHashes.Grabbed);
+    }
+
+    /// <summary>Animator Trigger <see cref="BossAnimHashes.Vulnerable"/>.</summary>
+    public void NotifyBossAnimVulnerable()
+    {
+        if (_bossAnimator == null) return;
+        _bossAnimator.SetTrigger(BossAnimHashes.Vulnerable);
     }
 
     /// <summary>
