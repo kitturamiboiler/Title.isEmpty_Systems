@@ -17,4 +17,4 @@
 
 * [📅 2026-04-03: Ground 마스크·단검 풀·사운드·Animator 인프라](./docs/devlog/2026-04-03_Infra_Ground_Pool_Sound_Animator.md)
 
-* [📅 2026-04-04: Rebase·README·외부 패치 검토 및 수정 요약](./docs/devlog/2026-04-04_Fix_Summary.md)
+* [📅 2026-04-04: Git 정리·Unity 씬/폴더 구조·Pixel Perfect·단검 물리](./docs/devlog/2026-04-04_Fix_Summary.md)
