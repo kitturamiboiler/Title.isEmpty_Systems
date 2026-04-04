@@ -38,12 +38,8 @@ public class PlayerBlinkController2D : MonoBehaviour
     [SerializeField] private Material _blinkTrailMaterial;
 
     /// <summary>
-    /// 블링크 성공 시 도착 좌표(World) 브로드캐스트.
-    /// Shadow 보스의 BlinkGhostMarker 스폰, 잔상 퍼즐 트리거에 사용.
-    /// </summary>
-    /// <summary>
     /// 블링크 실행 완료 시 발화. 인자: (출발지, 도착지).
-    /// Shadow 보스 잔상 퍼즐, TriggerCutscene 블링크 스킵 감지에서 구독.
+    /// Shadow 보스 잔상 퍼즐·BlinkGhostMarker, TriggerCutscene 블링크 스킵 감지에서 구독.
     /// </summary>
     public System.Action<Vector2, Vector2> OnBlinkExecuted;
 
