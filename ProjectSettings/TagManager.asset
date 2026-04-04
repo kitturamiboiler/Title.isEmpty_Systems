@@ -12,12 +12,12 @@ TagManager:
   - Wall
   - Water
   - UI
-  - Ground
   - Player
-  - PlayerInvincible
-  - Dagger
   - Enemy
-  - 
+  - Ground
+  - Dagger
+  - NPC
+  - PlayerInvincible
   - 
   - 
   - 
@@ -41,6 +41,36 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 652704051
+    locked: 0
+  - name: Midground
+    uniqueID: 1667609533
+    locked: 0
+  - name: Ground
+    uniqueID: 3687408173
+    locked: 0
+  - name: Npc
+    uniqueID: 303975133
+    locked: 0
+  - name: Interactable
+    uniqueID: 2384531303
+    locked: 0
+  - name: Enemy
+    uniqueID: 719877929
+    locked: 0
+  - name: Player
+    uniqueID: 3531137469
+    locked: 0
+  - name: Projectile/Dagger
+    uniqueID: 2126911825
+    locked: 0
+  - name: ForeGround
+    uniqueID: 3377592673
+    locked: 0
+  - name: UI
+    uniqueID: 3903283031
     locked: 0
   m_RenderingLayers:
   - Default

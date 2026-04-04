@@ -9,6 +9,16 @@
     "/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/BuiltInPackagesCombined.sha1"
   ],
   "outputs": {
+    "com.unity.2d.pixel-perfect@5.1.1": {
+      "name": "com.unity.2d.pixel-perfect",
+      "displayName": "2D Pixel Perfect",
+      "resolvedPath": "/Users/chosun-nhn13/Desktop/KnifeSystem_Unity/Library/PackageCache/com.unity.2d.pixel-perfect@09d99455b901",
+      "fingerprint": "09d99455b9018d7a152bb766d42b2569236a7b4a",
+      "editorCompatibility": "2021.3.0a1",
+      "version": "5.1.1",
+      "source": "registry",
+      "testable": false
+    },
     "com.unity.2d.sprite@1.0.0": {
       "name": "com.unity.2d.sprite",
       "displayName": "2D Sprite",
@@ -29,6 +39,16 @@
       "source": "builtin",
       "testable": false
     },
+    "com.unity.multiplayer.center@1.0.1": {
+      "name": "com.unity.multiplayer.center",
+      "displayName": "Multiplayer Center",
+      "resolvedPath": "/Users/chosun-nhn13/Desktop/KnifeSystem_Unity/Library/PackageCache/com.unity.multiplayer.center@f01f4ba8d00a",
+      "fingerprint": "f01f4ba8d00afa4e957bddf0fcd1612a564401ff",
+      "editorCompatibility": "6000.0.0a1",
+      "version": "1.0.1",
+      "source": "builtin",
+      "testable": false
+    },
     "com.unity.textmeshpro@5.0.0": {
       "name": "com.unity.textmeshpro",
       "displayName": "TextMeshPro",
@@ -46,16 +66,6 @@
       "fingerprint": "bb329a87fcdc5d55e815f3d804764d676674047e",
       "editorCompatibility": "2019.2.0a1",
       "version": "2.0.0",
-      "source": "builtin",
-      "testable": false
-    },
-    "com.unity.multiplayer.center@1.0.1": {
-      "name": "com.unity.multiplayer.center",
-      "displayName": "Multiplayer Center",
-      "resolvedPath": "/Users/chosun-nhn13/Desktop/KnifeSystem_Unity/Library/PackageCache/com.unity.multiplayer.center@f01f4ba8d00a",
-      "fingerprint": "f01f4ba8d00afa4e957bddf0fcd1612a564401ff",
-      "editorCompatibility": "6000.0.0a1",
-      "version": "1.0.1",
       "source": "builtin",
       "testable": false
     },

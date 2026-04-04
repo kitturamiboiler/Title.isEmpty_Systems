@@ -7,9 +7,9 @@ Darwin version:          25.3.0
 Architecture:            arm64
 Running under Rosetta:   NO
 Available memory:        16384 MB
-Date:                    2026-04-02T23:44:05Z
+Date:                    2026-04-04T04:14:24Z
 [Licensing::Module] Trying to connect to existing licensing client channel...
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chosun-nhn13" at "2026-04-02T23:44:05.410452Z"
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chosun-nhn13" at "2026-04-04T04:14:24.442932Z"
 
 COMMAND LINE ARGUMENTS:
 /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/MacOS/Unity
@@ -23,7 +23,7 @@ AssetImportWorker0
 -logFile
 Logs/AssetImportWorker0.log
 -srvPort
-60192
+56694
 -licensingIpc
 LicenseClient-chosun-nhn13
 -job-worker-count
@@ -72,11 +72,11 @@ Successfully changed project path to: /Users/chosun-nhn13/Desktop/KnifeSystem_Un
     "memorysetup-temp-allocator-size-gfx=262144"
 Player connection [8432758912]  Target information:
 
-Player connection [8432758912]  * "[IP] 172.25.222.196 [Port] 0 [Flags] 2 [Guid] 2317708720 [EditorId] 2317708720 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+Player connection [8432758912]  * "[IP] 10.116.236.248 [Port] 0 [Flags] 2 [Guid] 2227478596 [EditorId] 2227478596 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
 
-Player connection [8432758912]  * "[IP] 192.168.139.3 [Port] 0 [Flags] 2 [Guid] 2317708720 [EditorId] 2317708720 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+Player connection [8432758912]  * "[IP] 192.168.139.3 [Port] 0 [Flags] 2 [Guid] 2227478596 [EditorId] 2227478596 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
 
-Player connection [8432758912]  * "[IP] 192.168.97.0 [Port] 0 [Flags] 2 [Guid] 2317708720 [EditorId] 2317708720 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+Player connection [8432758912]  * "[IP] 192.168.97.0 [Port] 0 [Flags] 2 [Guid] 2227478596 [EditorId] 2227478596 [Version] 1048832 [Id] OSXEditor(0,joseondae-NHNui-MacBookAir.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
 
 Player connection [8432758912] Host joined multi-casting on [225.0.0.222:54997]...
 Player connection [8432758912] Host joined alternative multi-casting on [225.0.0.222:34997]...
@@ -112,53 +112,53 @@ Initialize mono
 Mono path[0] = '/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/Managed'
 Mono path[1] = '/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/lib/mono/unityjit-macos'
 Mono config path = '/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56408
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56927
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
 Register platform support module: /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.OSXStandalone.Extensions.dll
-Registered in 0.000378 seconds.
+Registered in 0.000882 seconds.
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.17.4+4293ba1
-  Session Id:              10fb28df2ab14c4bacd6cefd2d341a9a
+  Session Id:              aafc9818b8454d6998986c2130de1b83
   Correlation Id:          142e08653fb65768dc8568d36d625696
-  External correlation Id: 4931711450513221684
+  External correlation Id: 1186998557832805624
   Machine Id:              CtFqJIMv80U5AEEBw5HyQBEPb58=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-chosun-nhn13" (connect: 0.00s, validation: 0.00s, handshake: 0.57s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chosun-nhn13-notifications" at "2026-04-02T23:44:05.985725Z"
-[Licensing::Module] Licensing Background thread has ended after 0.58s
-- Loaded All Assemblies, in  0.235 seconds
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-chosun-nhn13" (connect: 0.00s, validation: 0.00s, handshake: 0.70s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chosun-nhn13-notifications" at "2026-04-04T04:14:25.140622Z"
+[Licensing::Module] Licensing Background thread has ended after 0.70s
+- Loaded All Assemblies, in  0.334 seconds
 Native extension for OSXStandalone target not found
 ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.263 seconds
-Domain Reload Profiling: 498ms
-	BeginReloadAssembly (58ms)
+- Finished resetting the current domain, in  0.285 seconds
+Domain Reload Profiling: 618ms
+	BeginReloadAssembly (134ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (0ms)
-	RebuildCommonClasses (25ms)
+	RebuildCommonClasses (26ms)
 	RebuildNativeTypeToScriptingClass (10ms)
 	initialDomainReloadingComplete (27ms)
-	LoadAllAssembliesAndSetupDomain (115ms)
-		LoadAssemblies (58ms)
+	LoadAllAssembliesAndSetupDomain (137ms)
+		LoadAssemblies (134ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (113ms)
-			TypeCache.Refresh (112ms)
-				TypeCache.ScanAssembly (101ms)
+		AnalyzeDomain (134ms)
+			TypeCache.Refresh (133ms)
+				TypeCache.ScanAssembly (120ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (263ms)
+	FinalizeReload (285ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (236ms)
+		SetupLoadedEditorAssemblies (257ms)
 			LogAssemblyErrors (0ms)
 			InitializePlatformSupportModulesInManaged (30ms)
-			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (60ms)
-			ProcessInitializeOnLoadAttributes (97ms)
-			ProcessInitializeOnLoadMethodAttributes (46ms)
+			SetLoadedEditorAssemblies (4ms)
+			BeforeProcessingInitializeOnLoad (65ms)
+			ProcessInitializeOnLoadAttributes (104ms)
+			ProcessInitializeOnLoadMethodAttributes (54ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -174,7 +174,7 @@ Begin MonoManager ReloadAssembly
   Product: Unity Personal
   Type: Assigned
   Expiration: Unlimited
-- Loaded All Assemblies, in  0.160 seconds
+- Loaded All Assemblies, in  0.165 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Native extension for OSXStandalone target not found
 [StoryDatabase] Chapter1[8] 세그먼트 31자 초과 (최대 26): "아이들이 처마 아래로 피했다. 이름을 부르는 소리, 빗소리가 뒤섞였다."
@@ -249,8 +249,8 @@ UnityEditor.EditorAssemblies:ProcessInitializeOnLoadMethodAttributes () (at /Use
 
 ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.257 seconds
-Domain Reload Profiling: 418ms
+- Finished resetting the current domain, in  0.282 seconds
+Domain Reload Profiling: 448ms
 	BeginReloadAssembly (89ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (3ms)
@@ -259,25 +259,25 @@ Domain Reload Profiling: 418ms
 		CreateAndSetChildDomain (16ms)
 	RebuildCommonClasses (26ms)
 	RebuildNativeTypeToScriptingClass (10ms)
-	initialDomainReloadingComplete (11ms)
-	LoadAllAssembliesAndSetupDomain (24ms)
-		LoadAssemblies (47ms)
+	initialDomainReloadingComplete (10ms)
+	LoadAllAssembliesAndSetupDomain (30ms)
+		LoadAssemblies (53ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
 		AnalyzeDomain (21ms)
-			TypeCache.Refresh (15ms)
-				TypeCache.ScanAssembly (10ms)
+			TypeCache.Refresh (14ms)
+				TypeCache.ScanAssembly (9ms)
 			BuildScriptInfoCaches (3ms)
 			ResolveRequiredComponents (2ms)
-	FinalizeReload (258ms)
+	FinalizeReload (282ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (193ms)
+		SetupLoadedEditorAssemblies (218ms)
 			LogAssemblyErrors (0ms)
 			InitializePlatformSupportModulesInManaged (1ms)
 			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (68ms)
-			ProcessInitializeOnLoadAttributes (85ms)
-			ProcessInitializeOnLoadMethodAttributes (35ms)
+			BeforeProcessingInitializeOnLoad (70ms)
+			ProcessInitializeOnLoadAttributes (101ms)
+			ProcessInitializeOnLoadMethodAttributes (41ms)
 			AfterProcessingInitializeOnLoad (1ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -287,55 +287,79 @@ Launched and connected shader compiler UnityShaderCompiler after 0.03 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 678 unused Assets / (173.3 KB). Loaded Objects now: 1277.
-Memory consumption went from 66.9 MB to 66.7 MB.
-Total: 4.484208 ms (FindLiveObjects: 0.095333 ms CreateObjectMapping: 0.026375 ms MarkObjects: 4.219000 ms  DeleteObjects: 0.143125 ms)
+Unloading 679 unused Assets / (160.7 KB). Loaded Objects now: 1278.
+Memory consumption went from 67.0 MB to 66.8 MB.
+Total: 4.657167 ms (FindLiveObjects: 0.078791 ms CreateObjectMapping: 0.022625 ms MarkObjects: 4.411417 ms  DeleteObjects: 0.144000 ms)
 
 ========================================================================
 Received Import Request.
-  Time since last request: 1088887.661483 seconds.
-  path: Assets/Enemy/Boss/Hound/States/HoundShockwaveState.cs
-  artifactKey: Guid(9229ea66b9d664b7c953399fa247901d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
-Start importing Assets/Enemy/Boss/Hound/States/HoundShockwaveState.cs using Guid(9229ea66b9d664b7c953399fa247901d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c885f0d030964420e2074a1e07953370') in 0.046327084 seconds
+  Time since last request: 1125160.085622 seconds.
+  path: Assets/Player/PlayerParryController2D.cs
+  artifactKey: Guid(85682ac5ccea44745ba9e3389888e3c5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Player/PlayerParryController2D.cs using Guid(85682ac5ccea44745ba9e3389888e3c5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '26db3c4f110398d56170d0ec140c502b') in 0.050955042 seconds
 Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000038 seconds.
-  path: Assets/EnemyLineOfSight2D.cs
-  artifactKey: Guid(a4d92f1fce6c04792822a7407cbfdda1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
-Start importing Assets/EnemyLineOfSight2D.cs using Guid(a4d92f1fce6c04792822a7407cbfdda1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '7b027beeb4ee96f472cee5d4e511bf9d') in 0.001048708 seconds
+  Time since last request: 0.000031 seconds.
+  path: Assets/Enemy/Boss/BossStateMachine.cs
+  artifactKey: Guid(04cfe285e04d7412eb82d28faf487734) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Enemy/Boss/BossStateMachine.cs using Guid(04cfe285e04d7412eb82d28faf487734) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '13fc7947887802dca762e87fd49e3a4b') in 0.000963417 seconds
 Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000038 seconds.
-  path: Assets/Enemy/Boss/Paper/States/PaperDroneShieldState.cs
-  artifactKey: Guid(55780b701ed9a47d3a4a738726e0a079) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
-Start importing Assets/Enemy/Boss/Paper/States/PaperDroneShieldState.cs using Guid(55780b701ed9a47d3a4a738726e0a079) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c01855e2a3f79dbb1824e14c59b4c646') in 0.000853417 seconds
+  Time since last request: 0.000050 seconds.
+  path: Assets/Player/States/BlinkState.cs
+  artifactKey: Guid(f26699f82e92248aea5522d2af09b813) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Player/States/BlinkState.cs using Guid(f26699f82e92248aea5522d2af09b813) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c4c7746fdc7fb92037dfc46f01318812') in 0.000798208 seconds
 Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000035 seconds.
-  path: Assets/Enemy/Boss/Shadow/States/ShadowHauntState.cs
-  artifactKey: Guid(a0d3471b6b9a7470da9d1ccc029da0c2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
-Start importing Assets/Enemy/Boss/Shadow/States/ShadowHauntState.cs using Guid(a0d3471b6b9a7470da9d1ccc029da0c2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '9dad50bd4199e4d7c88bb74d82361bfc') in 0.000841959 seconds
+  Time since last request: 0.000053 seconds.
+  path: Assets/Enemy/Boss/States/BossGrabbedState.cs
+  artifactKey: Guid(ff46e19704f454e04a5c6fb30dc299e3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Enemy/Boss/States/BossGrabbedState.cs using Guid(ff46e19704f454e04a5c6fb30dc299e3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '97f90d987070682f7a6f0bb096dd32e9') in 0.000766875 seconds
 Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000097 seconds.
-  path: Assets/Enemy/Boss/Designer/States/DesignerWaveState.cs
-  artifactKey: Guid(d89038a061ddb4290b9ad06369f80bb8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
-Start importing Assets/Enemy/Boss/Designer/States/DesignerWaveState.cs using Guid(d89038a061ddb4290b9ad06369f80bb8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '62bb667dc6444773b8827cff6cea3ff5') in 0.000853625 seconds
+  Time since last request: 0.000103 seconds.
+  path: Assets/Player/States/GrabState.cs
+  artifactKey: Guid(04e39e71c9c3a4ea8880e147a636f997) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Player/States/GrabState.cs using Guid(04e39e71c9c3a4ea8880e147a636f997) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a4f87326d267fc3401309e0e02440947') in 0.000960375 seconds
 Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000112 seconds.
-  path: Assets/WeaponData.cs
-  artifactKey: Guid(6523f90b6f42b4165982d28d3d43bb87) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
-Start importing Assets/WeaponData.cs using Guid(6523f90b6f42b4165982d28d3d43bb87) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'eed82e7248c02c7d02e5d749dd0f5689') in 0.000758875 seconds
+  Time since last request: 0.000117 seconds.
+  path: Assets/Utils/SimpleGameObjectPool.cs
+  artifactKey: Guid(087f5ffb05d364671b3edfcd62ec93a9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Utils/SimpleGameObjectPool.cs using Guid(087f5ffb05d364671b3edfcd62ec93a9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '45469d6ccf9cb870d936b9eab25cb810') in 0.001066208 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000089 seconds.
+  path: Assets/Player/States/RunState.cs
+  artifactKey: Guid(560d20b0b91624e2a9d7e5cf495b5b0f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Player/States/RunState.cs using Guid(560d20b0b91624e2a9d7e5cf495b5b0f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '4c6258999d00796502bc51e7d9c4e687') in 0.000857 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000041 seconds.
+  path: Assets/Player/States/PlayerBoundState.cs
+  artifactKey: Guid(450a64cf86d714b0c94aa0b30cc2c0b9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Player/States/PlayerBoundState.cs using Guid(450a64cf86d714b0c94aa0b30cc2c0b9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '235c1af54a1c5aaa19fc1920b002a040') in 0.001014792 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000167 seconds.
+  path: Assets/Player/PlayerMovement2D.cs
+  artifactKey: Guid(22ed3a6812ab0452e8e5e5fe32e2772a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Player/PlayerMovement2D.cs using Guid(22ed3a6812ab0452e8e5e5fe32e2772a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a1fdfc189009c318b6196a8b3aa2902f') in 0.000975875 seconds
 Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
 

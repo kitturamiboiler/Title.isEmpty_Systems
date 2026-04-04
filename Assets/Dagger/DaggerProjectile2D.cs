@@ -8,6 +8,9 @@ using UnityEngine;
 /// </summary>
 public class DaggerProjectile2D : ProjectileBase2D
 {
+    /// <summary>인스펙터 미지정 시 공유 — 탄성 0으로 미끄럼·튕김 완화.</summary>
+    private static PhysicsMaterial2D s_cachedNoBounceHighFriction;
+
     [Header("Dagger Refs")]
     [SerializeField] private TrailRenderer trailRenderer;
     [SerializeField] private Collider2D daggerCollider;
@@ -93,6 +96,7 @@ public class DaggerProjectile2D : ProjectileBase2D
         }
 
         base.Launch(origin, direction, data);
+        ConfigureRigidbodyForFlight();
     }
 
     private void Update()
@@ -128,6 +132,7 @@ public class DaggerProjectile2D : ProjectileBase2D
         if (IsEmbedSurface(layer))
         {
             IsStuckToWall = true;
+            PinToContact(collision);
             EmbedIntoSurface();
             SpawnHitFx(collision);
 
@@ -155,6 +160,7 @@ public class DaggerProjectile2D : ProjectileBase2D
                 health.TakeDamage(weaponData.damage);
         }
 
+        PinToContact(collision);
         EmbedIntoSurface();
         SpawnHitFx(collision);
 
@@ -209,6 +215,7 @@ public class DaggerProjectile2D : ProjectileBase2D
         {
             rb.bodyType       = RigidbodyType2D.Dynamic;
             rb.linearVelocity = newDirection.normalized * (weaponData != null ? weaponData.projectileSpeed : 12f);
+            ConfigureRigidbodyForFlight();
         }
 
         if (daggerCollider != null)
@@ -245,6 +252,56 @@ public class DaggerProjectile2D : ProjectileBase2D
         return layer == Layers.Wall || layer == Layers.Ground;
     }
 
+    /// <summary>
+    /// 고속 이동 시 Discrete로는 접촉이 약해지고, 탄성 머티리얼이면 지면에서 미끄러지듯 튕긴다.
+    /// </summary>
+    private void ConfigureRigidbodyForFlight()
+    {
+        if (rb == null) return;
+
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        rb.interpolation          = RigidbodyInterpolation2D.Interpolate;
+        rb.angularVelocity        = 0f;
+        rb.constraints            = RigidbodyConstraints2D.None;
+
+        PhysicsMaterial2D mat = weaponData != null ? weaponData.daggerPhysicsMaterial : null;
+        if (mat == null)
+        {
+            if (s_cachedNoBounceHighFriction == null)
+            {
+                s_cachedNoBounceHighFriction = new PhysicsMaterial2D("DaggerNoBounce")
+                {
+                    friction   = 1f,
+                    bounciness = 0f,
+                };
+            }
+
+            mat = s_cachedNoBounceHighFriction;
+        }
+
+        rb.sharedMaterial = mat;
+    }
+
+    /// <summary>
+    /// 접촉 법선 쪽으로 아주 조금 밀어 넣어, 물리 스텝이 분리 속도를 남기기 전에 표면에 고정한다.
+    /// </summary>
+    private void PinToContact(Collision2D collision)
+    {
+        if (collision.contactCount <= 0) return;
+
+        ContactPoint2D c = collision.GetContact(0);
+        LastHitNormal = c.normal;
+
+        float inset = weaponData != null ? weaponData.daggerSurfaceEmbedInset : 0.04f;
+        if (inset <= 0f) return;
+
+        // 법선은 보통 표면에서 단검 쪽으로 — 표면 안으로 밀려면 -normal.
+        var p = transform.position;
+        p.x = c.point.x - c.normal.x * inset;
+        p.y = c.point.y - c.normal.y * inset;
+        transform.position = p;
+    }
+
     private void EmbedIntoSurface()
     {
         _embedded = true;
@@ -252,8 +309,10 @@ public class DaggerProjectile2D : ProjectileBase2D
 
         if (rb != null)
         {
-            rb.linearVelocity = Vector2.zero;
-            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.linearVelocity   = Vector2.zero;
+            rb.angularVelocity  = 0f;
+            rb.bodyType         = RigidbodyType2D.Kinematic;
+            rb.constraints      = RigidbodyConstraints2D.FreezeRotation;
         }
 
         if (daggerCollider != null)
