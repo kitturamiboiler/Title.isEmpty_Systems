@@ -25,17 +25,17 @@ Advanced 2D Blink Mechanics with Hit-stop, I-frame, and Normal-offset in Unity.
 [![Visit Site](https://img.shields.io/badge/LIVE_DEMO-Visit_Dashboard-1D9E75?style=for-the-badge&logo=github)](https://kitturamiboiler.github.io/)
 
 ### 📈 Overall Progress
-![Total Progress](https://geps.dev/progress/34)  
-> **현재 목표:** Phase 1 (플레이어블 데모) 완성 및 하운드 보스 연출 최적화
+![Total Progress](https://geps.dev/progress/45)  
+> **현재 목표:** (애니메이터 및 시스템 유기적 연결) 진입 및 아트 리터칭
 
 ### ⚙️ System Completion
 | System | Completion | Status |
 | :--- | :---: | :--- |
 | **Player FSM** | ![92%](https://img.shields.io/badge/92%25-1D9E75) | 🛠️ Refactoring |
-| **Dagger Blink** | ![95%](https://img.shields.io/badge/95%25-1D9E75) | ✅ Stable |
+| **Dagger Blink** | ![98%](https://img.shields.io/badge/95%25-1D9E75) | ✅ Stable |
 | **Boss Framework** | ![90%](https://img.shields.io/badge/90%25-1D9E75) | ✅ Core Done |
-| **Art / Sprites** | ![10%](https://img.shields.io/badge/10%25-BA7517) | 🎨 Work in Progress |
-| **Audio / SFX** | ![5%](https://img.shields.io/badge/5%25-A32D2D) | 🔈 Planning |
+| **Art / Sprites** | ![18%](https://img.shields.io/badge/10%25-BA7517) | 🎨 Work in Progress |
+| **Audio / SFX** | ![12%](https://img.shields.io/badge/5%25-A32D2D) | 🔈 Planning |
 
 ### 👾 Boss Development Status
 -  **하운드 (Hound):** `[██████░░░░]` 60% (로직 완료 / 연출 작업 중)
