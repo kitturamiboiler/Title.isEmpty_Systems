@@ -16,3 +16,5 @@
 * [📅 2026-04-03: 컴파일·Safe Mode 에러 수정](./docs/devlog/2026-04-03_Compile_Errors_Fix.md)
 
 * [📅 2026-04-03: Ground 마스크·단검 풀·사운드·Animator 인프라](./docs/devlog/2026-04-03_Infra_Ground_Pool_Sound_Animator.md)
+
+* [📅 2026-04-04: Rebase·README·외부 패치 검토 및 수정 요약](./docs/devlog/2026-04-04_Fix_Summary.md)
