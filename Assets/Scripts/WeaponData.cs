@@ -7,6 +7,13 @@ public class WeaponData : ScriptableObject
     [Tooltip("박혀 고정될 표면 레이어(Ground, Wall 등). 비어 있으면 이름 Wall/Ground로 폴백.")]
     public LayerMask daggerEmbedSurfaceMask;
 
+    [Tooltip("단검 Rigidbody2D.sharedMaterial. 비우면 탄성 0·마찰 높은 기본 머티리얼을 런타임 생성.")]
+    public PhysicsMaterial2D daggerPhysicsMaterial;
+
+    [Tooltip("박힘 직전 접점을 표면 안쪽으로 밀어 넣는 거리. 탄성·미끄럼으로 튕겨 나가는 현상 완화.")]
+    [Min(0f)]
+    public float daggerSurfaceEmbedInset = 0.04f;
+
     [Header("Blink Combat (PlayerBlinkController2D)")]
     [Tooltip("블링크 경로/도착에서 체크할 적 레이어.")]
     public LayerMask blinkEnemyLayerMask;
