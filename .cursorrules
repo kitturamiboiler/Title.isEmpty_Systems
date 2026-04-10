@@ -1,6 +1,6 @@
 # ============================================================
 # PROJECT: Title.isEmpty — Unity 2D Action (산나비 스타일)
-# RULE VERSION: 2.0 (principles + project merged)
+# RULE VERSION: 2.2 (principles + project merged, 2026-04 — Unity AI Assistant 패키지 명시)
 # ============================================================
 
 ## IDENTITY & ROLE
@@ -51,13 +51,11 @@ void Foo() {
 
 ```
 PlayerStateMachine.cs
-States/
-  IdleState.cs
-  RunState.cs
-  AttackState.cs
-  DashState.cs
-  BlinkState.cs
+Player/States/
+  IdleState.cs, RunState.cs, BlinkState.cs
+  GrabState.cs, SlamState.cs, PlayerBoundState.cs
 ```
+(상태 분기는 Update if/else 금지 — 전부 State 클래스.)
 
 ---
 
@@ -142,19 +140,38 @@ LINQ                 // 핫 루프 내 금지
 
 ## Project Context (현재 구현 현황)
 
-- **장르**: 2D 횡스크롤 액션 (산나비 + 한국 사이버펑크)
-- **엔진**: Unity 2D (URP)
-- **핵심 메카닉**: 단검 투척 → 블링크 순간이동 → 연속 전투
+- **장르**: 2D 횡스크롤 액션 (산나비 + 한국 사이버펑크, 서사 「우산 아래」)
+- **엔진**: Unity **6000.x** (2D / URP) — `ProjectSettings/ProjectVersion.txt` 기준
+- **핵심 메카닉**: 단검 투척 → 블링크 → 그랩 → 슬램, 보스 패리/페이즈
 
-**구현 완료**
-- `DaggerProjectile2D` — 단검 투사체, 벽/적 박힘, 블링크 트리거
-- `PlayerBlinkController2D` — 블링크 실행 컨트롤러
-- `EffectManager` — 싱글턴 이펙트 관리자
-- `IHealth` — 데미지 인터페이스
+**Unity AI (에디터 패키지 — 게임 코드 아님)**
+- `Packages/manifest.json`에 **`com.unity.ai.assistant`** 등록됨 (예: `2.5.0-pre.2`).
+- 보이는 `Unity.AI.*` / `AI*.cs` / `Ai*.cs` 는 **`Library/PackageCache/com.unity.ai.assistant@...`** 안의 **공식 패키지 소스**. 에디터에서 Assistant·생성기 UI 등에 쓰인다.
+- **이 프로젝트 게임 로직이 아니다** — 직접 수정·`Assets`로 복사·런타임 의존 추가 금지. 이슈는 패키지 업데이트/제거로 처리.
 
-**도입 예정 / 진행 중**
-- `Layers.cs` — 레이어 정수 상수 관리
-- `IProjectile2D` — 2D 전용 투사체 인터페이스
-- `PlayerStateMachine` — FSM 전투 상태 관리
-- 히트스톱 시스템
-- 오브젝트 풀링
+**에셋·스크립트 레이아웃 (요약)**
+- `Assets/Scripts/` — `Layers`, `WeaponData`, `MovementData`, `CameraFollow`, `EnemyLineOfSight2D` 등 공용 데이터·유틸
+- `Assets/Player/`, `Assets/Dagger/`, `Assets/Enemy/Boss/`, `Assets/Dialogue/`, `Assets/Ending/` — 게임 로직
+- `Assets/Scenes/` — 테스트 씬 (`TestScene`, `Test_Arena` 등)
+- `Assets/Data/` — `WeaponData` 등 ScriptableObject 인스턴스
+
+**구현 완료 (플레이어·전투)**
+- `Layers` + `PlayerPhysicsGroundMask` / `EmbedSurfaceMask` — 레이어 상수·마스크 폴백
+- `IProjectile2D`, `ProjectileBase2D`, `DaggerProjectile2D` — 투사체, 벽·지면 박힘, 우산 반사, 풀 반환
+- `PlayerBlinkController2D` — 투척·블링크, 코요테/버퍼, 히트스톱 연동, `SimpleGameObjectPool` 선택 연동
+- `PlayerStateMachine` + `Idle/Run/Blink/Grab/Slam/PlayerBound` 상태
+- `PlayerParryController2D` — 투사체 + `IParryableMelee` 패리
+- `HitStopManager`, `CameraShaker`, `SlamImpactJuice` — 슬램/패리/블링크 주스
+- `SoundManager` — BGM/SFX 슬롯 + `PlayBlink` 등 (클립은 인스펙터 연결)
+- `PlayerAnimHashes` + 상태 `Enter`에서 `NotifyPlayerAnim` (Animator 미연결 시 가드)
+
+**구현 완료 (보스·서사)**
+- `BossStateMachine` 확장 — Hound / Paper / Brother / Shadow / Designer 등
+- `StoryDatabase`, `ChapterStoryLoader`, `CutscenePlayer`, `CombatDialogueUI`, `BossCombatDialogue`
+- `IGrabbable`, `BossHealth` / `EnemyHealth`, 체크포인트·엔딩 USB 분기 뼈대
+
+**진행 중 / 아트·폴리시**
+- 스프라이트·Animator 클립 실제 연결, SFX/BGM 파일 채움
+- `EffectManager` 파티클을 슬램 착지 등에 전면 연결 (일부 TODO)
+- Unity 6 `Physics2D.*NonAlloc` Obsolete 시 API 마이그레이션 검토
+- 루트에 **표준 Unity `.gitignore`** 권장 (`Library/` 등) — `Assets`·`Packages`·`ProjectSettings` 이하 **`*.meta`는 커밋 유지** (GUID 일치)
