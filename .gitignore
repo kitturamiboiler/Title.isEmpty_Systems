@@ -1,7 +1,15 @@
 # Unity — https://github.com/github/gitignore/blob/main/Unity.gitignore
-# Library = 캐시·패키지 해석·AI Assistant 그래프 등 (커밋 금지)
+#
+# Library/ = 에디터·임포트 캐시 전부 (푸시 금지)
+#   - ShaderCache, Bee/Artifacts, PackageCache(URP 등 패키지 셰이더 포함),
+#     AI.CoreGraph 등 “셰이더/패키지 덩어리”로 보이는 것도 여기서 나온다.
+# Assets/ 아래 *.shader / Shader Graph는 프로젝트 자산이므로 커밋하는 게 맞다.
 
 /[Ll]ibrary/
+
+# macOS
+.DS_Store
+**/.DS_Store
 /[Tt]emp/
 /[Oo]bj/
 /[Bb]uild/
