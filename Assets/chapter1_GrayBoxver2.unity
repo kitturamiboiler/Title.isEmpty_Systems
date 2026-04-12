@@ -551,7 +551,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 11
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 44f7324f0aa484888886d8c87d1ebd64, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -5445,6 +5445,7 @@ GameObject:
   - component: {fileID: 480730793}
   - component: {fileID: 480730792}
   - component: {fileID: 480730791}
+  - component: {fileID: 480730799}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -5502,9 +5503,9 @@ MonoBehaviour:
   maxAirBlinkCount: 1
   currentAirBlinkCount: 0
   _blinkTrailMaterial: {fileID: 0}
-  _storyUmbrellaSprite: {fileID: 0}
-  _storyVisualRoot: {fileID: 0}
-  _umbrellaSquashWorldOffset: 0.02
+  _storyUmbrellaSprite: {fileID: 21300000, guid: 309e91698f3574a8d836f6340d66558d, type: 3}
+  _storyVisualRoot: {fileID: 350699257}
+  _umbrellaSquashWorldOffset: 0.0625
   _umbrellaSquashDuration: 0.1
 --- !u!114 &480730793
 MonoBehaviour:
@@ -5646,6 +5647,19 @@ Transform:
   - {fileID: 350699257}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &480730799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480730790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85682ac5ccea44745ba9e3389888e3c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerParryController2D
+  _weaponData: {fileID: 11400000, guid: a00a206a8a8a345a2a9a0af5d6c1a058, type: 2}
 --- !u!1 &671684663
 GameObject:
   m_ObjectHideFlags: 0
@@ -5687,7 +5701,8 @@ GameObject:
   m_Component:
   - component: {fileID: 691369448}
   - component: {fileID: 691369447}
-  m_Layer: 0
+  - component: {fileID: 691369449}
+  m_Layer: 10
   m_Name: NPC_Yeonseo_Young
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5768,6 +5783,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &691369449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 691369446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e9099d806db74795891f5de0e043af6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCFollow2D
+  _rb: {fileID: 0}
+  _moveSpeed: 4
+  _speedReference: {fileID: 480730794}
+  _maxSpeedMultiplierVsPlayer: 1.2
 --- !u!1 &931350504
 GameObject:
   m_ObjectHideFlags: 0
@@ -5778,6 +5809,7 @@ GameObject:
   m_Component:
   - component: {fileID: 931350506}
   - component: {fileID: 931350505}
+  - component: {fileID: 931350507}
   m_Layer: 0
   m_Name: Trigger_Opening_Yeonseo
   m_TagString: Untagged
@@ -5840,12 +5872,48 @@ Transform:
   m_GameObject: {fileID: 931350504}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 4, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &931350507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 931350504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95b1d6dce8bb54669a57e50da0875180, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OpeningEventController
+  _playerMovement: {fileID: 480730794}
+  _playerBlink: {fileID: 480730792}
+  _playerParry: {fileID: 480730799}
+  _npc: {fileID: 691369449}
+  _storyGate: {fileID: 1708238394}
+  _spriteUmbrellaHold: {fileID: 21300000, guid: 44f7324f0aa484888886d8c87d1ebd64, type: 3}
+  _spriteUmbrellaOpen: {fileID: 21300000, guid: 309e91698f3574a8d836f6340d66558d, type: 3}
+  _umbrellaSpriteRenderer: {fileID: 335323257}
+  _visualRoot: {fileID: 350699257}
+  _umbrellaStretchRoot: {fileID: 1843525619}
+  _storyVisualAnimator: {fileID: 0}
+  _anticipationHoldDuration: 0.2
+  _smearDuration: 0.05
+  _followThroughDuration: 0.1
+  _bounceVisualLocalY: -0.125
+  _umbrellaSpriteLocalZ: -0.01
+  _followDistance: 1.5
+  _restorePlayerControlAfterSequence: 1
+  _restoreDefaultSpriteAfterSequence: 0
+  _waitForFloorBeforeLock: 1
+  _landingWaitTimeoutSeconds: 8
+  _snapWorldYOnLandingTimeout: 1
+  _forcedGroundWorldY: 1.1
+  _landingSnapMicroBounceLocalY: -0.0625
 --- !u!1 &1000880695
 GameObject:
   m_ObjectHideFlags: 0
@@ -8632,7 +8700,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1843525619
 Transform:
   m_ObjectHideFlags: 0

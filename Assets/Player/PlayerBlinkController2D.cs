@@ -42,8 +42,8 @@ public class PlayerBlinkController2D : MonoBehaviour
     [SerializeField] private Sprite _storyUmbrellaSprite;
     [Tooltip("비우면 SpriteRenderer.transform. 피벗 Bottom 기준 스프라이트만 스쿼시.")]
     [SerializeField] private Transform _storyVisualRoot;
-    [Tooltip("스왑 직후 로컬 Y 눌림(월드 단위, 대략 2px≈0.02@100PPU).")]
-    [SerializeField] private float _umbrellaSquashWorldOffset = 0.02f;
+    [Tooltip("스왑 직후 로컬 Y 눌림(월드 단위). hold PPU16이면 1px=0.0625 권장(내부에서 Abs 처리).")]
+    [SerializeField] private float _umbrellaSquashWorldOffset = 0.0625f;
     [SerializeField] private float _umbrellaSquashDuration = 0.1f;
 
     private Sprite _cachedSpriteBeforeUmbrella;
@@ -130,6 +130,38 @@ public class PlayerBlinkController2D : MonoBehaviour
         _squashVisual = _storyVisualRoot != null ? _storyVisualRoot : spriteRenderer != null ? spriteRenderer.transform : null;
         if (_squashVisual != null)
             _squashVisualBaseLocal = _squashVisual.localPosition;
+    }
+
+    /// <summary>플레이어 바디 스프라이트. OpeningEventController 우산 연출용.</summary>
+    public SpriteRenderer PlayerSpriteRenderer => spriteRenderer;
+
+    /// <summary>스토리 바운스용 비주얼 루트. 없으면 스프라이트 Transform.</summary>
+    public Transform StoryVisualRootTransform =>
+        _storyVisualRoot != null ? _storyVisualRoot : spriteRenderer != null ? spriteRenderer.transform : null;
+
+    /// <summary>
+    /// OpeningEventController 전용. 자동 스쿼시 코루틴 없이 스프라이트만 바꾸고 RestoreSpriteAfterStory 캐시를 맞춘다.
+    /// </summary>
+    /// <param name="sprite">적용할 스프라이트.</param>
+    public void StoryOpeningSetSprite(Sprite sprite)
+    {
+        if (sprite == null)
+        {
+            Debug.LogWarning($"[PlayerBlinkController2D] StoryOpeningSetSprite: sprite null — {gameObject.name}");
+            return;
+        }
+
+        if (spriteRenderer == null)
+        {
+            Debug.LogError($"[PlayerBlinkController2D] StoryOpeningSetSprite: SpriteRenderer missing — {gameObject.name}");
+            return;
+        }
+
+        if (!_hasUmbrellaOverrideActive)
+            _cachedSpriteBeforeUmbrella = spriteRenderer.sprite;
+
+        _hasUmbrellaOverrideActive = true;
+        spriteRenderer.sprite = sprite;
     }
 
     /// <summary>히트스톱 중에는 이동 스크립트가 velocity.x 등을 건드리지 않도록.</summary>
