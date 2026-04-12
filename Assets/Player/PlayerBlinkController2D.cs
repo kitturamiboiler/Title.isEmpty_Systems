@@ -37,6 +37,22 @@ public class PlayerBlinkController2D : MonoBehaviour
     [Tooltip("블링크 잔상 LineRenderer용 머티리얼. 비워두면 Awake에서 Sprites/Default로 자동 생성.")]
     [SerializeField] private Material _blinkTrailMaterial;
 
+    [Header("Story / Opening (optional)")]
+    [Tooltip("OpeningEventController 등에서 ChangeToUmbrellaSprite() 호출 시 적용.")]
+    [SerializeField] private Sprite _storyUmbrellaSprite;
+    [Tooltip("비우면 SpriteRenderer.transform. 피벗 Bottom 기준 스프라이트만 스쿼시.")]
+    [SerializeField] private Transform _storyVisualRoot;
+    [Tooltip("스왑 직후 로컬 Y 눌림(월드 단위, 대략 2px≈0.02@100PPU).")]
+    [SerializeField] private float _umbrellaSquashWorldOffset = 0.02f;
+    [SerializeField] private float _umbrellaSquashDuration = 0.1f;
+
+    private Sprite _cachedSpriteBeforeUmbrella;
+    private bool _hasUmbrellaOverrideActive;
+    private bool _storyInputLocked;
+    private Coroutine _umbrellaSquashCoroutine;
+    private Transform _squashVisual;
+    private Vector3 _squashVisualBaseLocal;
+
     /// <summary>
     /// 블링크 실행 완료 시 발화. 인자: (출발지, 도착지).
     /// Shadow 보스 잔상 퍼즐·BlinkGhostMarker, TriggerCutscene 블링크 스킵 감지에서 구독.
@@ -105,6 +121,15 @@ public class PlayerBlinkController2D : MonoBehaviour
             else
                 _blinkTrailMaterial = new Material(shader);
         }
+
+        CacheStorySquashVisual();
+    }
+
+    private void CacheStorySquashVisual()
+    {
+        _squashVisual = _storyVisualRoot != null ? _storyVisualRoot : spriteRenderer != null ? spriteRenderer.transform : null;
+        if (_squashVisual != null)
+            _squashVisualBaseLocal = _squashVisual.localPosition;
     }
 
     /// <summary>히트스톱 중에는 이동 스크립트가 velocity.x 등을 건드리지 않도록.</summary>
@@ -138,8 +163,109 @@ public class PlayerBlinkController2D : MonoBehaviour
     /// </summary>
     public bool SuppressStateChangeOnThrow { get; set; }
 
+    /// <summary>스토리 연출 중 단검·점프 버퍼 입력 차단.</summary>
+    /// <param name="locked">잠금 여부.</param>
+    public void SetStoryInputLocked(bool locked)
+    {
+        _storyInputLocked = locked;
+        if (!locked)
+            _jumpInputBufferedUntil = -1f;
+    }
+
+    /// <summary>인스펙터에 할당된 우산 스프라이트로 교체한다. 복구는 RestoreSpriteAfterStory().</summary>
+    public void ChangeToUmbrellaSprite()
+    {
+        if (spriteRenderer == null)
+        {
+            Debug.LogError($"[PlayerBlinkController2D] ChangeToUmbrellaSprite: SpriteRenderer missing on {gameObject.name}");
+            return;
+        }
+
+        if (_storyUmbrellaSprite == null)
+        {
+            Debug.LogWarning($"[PlayerBlinkController2D] ChangeToUmbrellaSprite: _storyUmbrellaSprite not assigned on {gameObject.name}");
+            return;
+        }
+
+        if (!_hasUmbrellaOverrideActive)
+            _cachedSpriteBeforeUmbrella = spriteRenderer.sprite;
+
+        spriteRenderer.sprite = _storyUmbrellaSprite;
+        _hasUmbrellaOverrideActive = true;
+
+        if (_umbrellaSquashWorldOffset > 0.0001f && _umbrellaSquashDuration > 0.0001f)
+        {
+            CacheStorySquashVisual();
+            if (_umbrellaSquashCoroutine != null)
+                StopCoroutine(_umbrellaSquashCoroutine);
+            _umbrellaSquashCoroutine = StartCoroutine(StoryUmbrellaSquashRoutine());
+        }
+    }
+
+    /// <summary>ChangeToUmbrellaSprite() 이전 스프라이트로 되돌린다.</summary>
+    public void RestoreSpriteAfterStory()
+    {
+        StopStoryUmbrellaSquashVisual();
+
+        if (spriteRenderer == null)
+            return;
+        if (!_hasUmbrellaOverrideActive)
+            return;
+
+        spriteRenderer.sprite = _cachedSpriteBeforeUmbrella;
+        _hasUmbrellaOverrideActive = false;
+    }
+
+    private void StopStoryUmbrellaSquashVisual()
+    {
+        if (_umbrellaSquashCoroutine != null)
+        {
+            StopCoroutine(_umbrellaSquashCoroutine);
+            _umbrellaSquashCoroutine = null;
+        }
+
+        if (_squashVisual != null)
+            _squashVisual.localPosition = _squashVisualBaseLocal;
+    }
+
+    private System.Collections.IEnumerator StoryUmbrellaSquashRoutine()
+    {
+        Transform v = _squashVisual;
+        if (v == null)
+        {
+            _umbrellaSquashCoroutine = null;
+            yield break;
+        }
+
+        Vector3 baseLocal = _squashVisualBaseLocal;
+        float half = _umbrellaSquashDuration * 0.5f;
+        float depth = -Mathf.Abs(_umbrellaSquashWorldOffset);
+
+        for (float t = 0f; t < half; t += Time.deltaTime)
+        {
+            float u = half > 0.0001f ? t / half : 1f;
+            float y = Mathf.Lerp(0f, depth, u);
+            v.localPosition = baseLocal + new Vector3(0f, y, 0f);
+            yield return null;
+        }
+
+        for (float t = 0f; t < half; t += Time.deltaTime)
+        {
+            float u = half > 0.0001f ? t / half : 1f;
+            float y = Mathf.Lerp(depth, 0f, u);
+            v.localPosition = baseLocal + new Vector3(0f, y, 0f);
+            yield return null;
+        }
+
+        v.localPosition = baseLocal;
+        _umbrellaSquashCoroutine = null;
+    }
+
     private void Update()
     {
+        if (_storyInputLocked)
+            return;
+
         // GrabState · SlamState 진행 중 단검 투척·블링크 입력 차단
         // 자기전이(Grab→Grab) 및 Slam 도중 2차 블링크 오발사 방지
         if (IsGrabOrSlamActive())

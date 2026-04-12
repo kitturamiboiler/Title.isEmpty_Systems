@@ -33,12 +33,21 @@ public class PlayerParryController2D : MonoBehaviour
     private bool  _isActive;        // 판정 창 열린 상태
     private bool  _isCooling;       // 쿨다운 중
     private bool  _hasParried;      // 가설 1: 이번 윈도우 패리 성공 여부 — 중복 발화 하드 게이트
+    private bool _storyInputLocked;
 
     /// <summary>
     /// 현재 패리 판정 창이 열려 있으면 true.
     /// EliteEnemy.ApplySwingDamage()가 데미지 전에 선 체크하여 동시 판정 충돌을 막는다.
     /// </summary>
     public bool IsParryWindowActive => _isActive;
+
+    /// <summary>스토리 연출 중 Q 패리 입력 차단.</summary>
+    /// <param name="locked">잠금 여부.</param>
+    public void SetStoryInputLocked(bool locked)
+    {
+        _storyInputLocked = locked;
+    }
+
     private float _activeTimer;
     private float _coolTimer;
 
@@ -66,6 +75,8 @@ public class PlayerParryController2D : MonoBehaviour
 
     private void HandleInput()
     {
+        if (_storyInputLocked)
+            return;
         if (_isCooling || _isActive) return;
         if (_weaponData == null) return;
 

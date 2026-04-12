@@ -111,6 +111,14 @@ public class PlayerMovement2D : MonoBehaviour
     /// <summary>발이 떨어진 뒤 코요테로 허용되는 추가 점프 1회(연속 코요테 악용 방지).</summary>
     private bool _coyoteJumpConsumed;
 
+    /// <summary>오프닝·컷신 등에서 이동·점프 입력 및 중력 적용을 막는다.</summary>
+    private bool _storyInputLocked;
+
+    private float _gravityScaleBeforeStoryLock = 1f;
+
+    /// <summary>스토리 잠금 해제 직후 잡고 있던 수평 입력이 한꺼번에 물리에 반영되는 것을 완화.</summary>
+    private float _storyUnlockInputSuppressUntil = -1f;
+
     private void Awake()
     {
         if (rb == null)
@@ -128,8 +136,58 @@ public class PlayerMovement2D : MonoBehaviour
     /// <summary>블링크/투척 로직에서 벽 타기는 지상·코요테와 동일하게 '벽 접촉'으로 취급.</summary>
     public bool IsWallClimbing => _currentPhase == MovementPhase.WallClimb;
 
+    /// <summary>바닥(플레이어 물리 지면 마스크)에 발이 닿았는지. 연출 전 착지 대기용.</summary>
+    public bool IsFloorGrounded() => EvaluateFloorGrounded(out _);
+
+    /// <summary>인스펙터 <c>moveSpeed</c> (NPC 추적 속도 상한 계산 등).</summary>
+    public float ConfiguredMoveSpeed => moveSpeed;
+
+    /// <summary>
+    /// 스토리 연출용 입력·중력 게이트. true면 이동/점프 입력을 무시하고 속도를 유지 제로에 가깝게 고정한다.
+    /// </summary>
+    /// <param name="locked">잠금 여부.</param>
+    public void SetStoryInputLocked(bool locked)
+    {
+        if (rb == null)
+            rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            Debug.LogError($"[PlayerMovement2D] SetStoryInputLocked: Rigidbody2D missing on {gameObject.name}");
+            return;
+        }
+
+        if (locked == _storyInputLocked)
+            return;
+
+        _storyInputLocked = locked;
+        if (locked)
+        {
+            _gravityScaleBeforeStoryLock = rb.gravityScale;
+            rb.gravityScale = 0f;
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
+        else
+        {
+            rb.gravityScale = _gravityScaleBeforeStoryLock;
+            _jumpInputBufferedUntil = -1f;
+            _wallJumpInputLockUntil = -1f;
+            _storyUnlockInputSuppressUntil = Time.time + 0.08f;
+        }
+    }
+
+    private float ReadHorizontalRaw()
+    {
+        if (Time.time < _storyUnlockInputSuppressUntil)
+            return 0f;
+        return Input.GetAxisRaw("Horizontal");
+    }
+
     private void Update()
     {
+        if (_storyInputLocked)
+            return;
+
         if (WasJumpPressedThisFrame())
             _jumpInputBufferedUntil = Time.time + InputBufferDuration;
 
@@ -180,6 +238,16 @@ public class PlayerMovement2D : MonoBehaviour
             return;
         }
 
+        if (_storyInputLocked)
+        {
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
+            }
+            return;
+        }
+
         bool floorGrounded = EvaluateFloorGrounded(out _);
         if (floorGrounded)
         {
@@ -187,7 +255,7 @@ public class PlayerMovement2D : MonoBehaviour
             _coyoteJumpConsumed = false;
         }
 
-        float hRaw = Input.GetAxisRaw("Horizontal");
+        float hRaw = ReadHorizontalRaw();
         float hForWall = ApplyWallJumpInputLock(hRaw);
         WallProbe wallProbe = BuildWallProbe(hForWall);
 
@@ -225,6 +293,9 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (_storyInputLocked)
+            return;
+
         if (blinkController != null && blinkController.IsHitStopBlockingMovement)
             return;
 
@@ -245,7 +316,7 @@ public class PlayerMovement2D : MonoBehaviour
             return;
         }
 
-        float h = Input.GetAxisRaw("Horizontal");
+        float h = ReadHorizontalRaw();
         if (Mathf.Abs(h) < inputDeadZone)
             return;
 
