@@ -111,10 +111,24 @@ public class PlayerMovement2D : MonoBehaviour
     /// <summary>발이 떨어진 뒤 코요테로 허용되는 추가 점프 1회(연속 코요테 악용 방지).</summary>
     private bool _coyoteJumpConsumed;
 
-    /// <summary>오프닝·컷신 등에서 이동·점프 입력 및 중력 적용을 막는다.</summary>
-    private bool _storyInputLocked;
+    /// <summary>오프닝·컷신 등에서 이동·점프·중력을 완전히 막는다.</summary>
+    private bool _storyFullInputLock;
+
+    /// <summary>서사 구간: 좌우 이동만 허용, 점프/벽타기 차단(트리거 스킵 방지).</summary>
+    private bool _storyWalkOnlyLock;
 
     private float _gravityScaleBeforeStoryLock = 1f;
+
+    /// <summary>오프닝(누아르 템포) 전용 물리 — 전투 진입 전까지 <see cref="EndOpeningSequencePhysics"/>로만 해제.</summary>
+    private bool _openingSequencePhysicsActive;
+
+    private float _savedMoveSpeedForOpening;
+    private float _savedJumpVelocityForOpening;
+    private float _openingGroundAcceleration;
+    private bool  _openingPhysicsSnapshotValid;
+
+    const float FallbackMoveSpeedAfterOpening    = 4f;
+    const float FallbackJumpVelocityAfterOpening = 12f;
 
     /// <summary>스토리 잠금 해제 직후 잡고 있던 수평 입력이 한꺼번에 물리에 반영되는 것을 완화.</summary>
     private float _storyUnlockInputSuppressUntil = -1f;
@@ -143,10 +157,13 @@ public class PlayerMovement2D : MonoBehaviour
     public float ConfiguredMoveSpeed => moveSpeed;
 
     /// <summary>
-    /// 스토리 연출용 입력·중력 게이트. true면 이동/점프 입력을 무시하고 속도를 유지 제로에 가깝게 고정한다.
+    /// 스토리 연출용 입력 게이트.
+    /// 기본: 완전 정지(중력 0·속도 0).
+    /// walkOnlyNoJump: 걷기만 허용, 점프·벽타기·벽점프 차단.
     /// </summary>
     /// <param name="locked">잠금 여부.</param>
-    public void SetStoryInputLocked(bool locked)
+    /// <param name="walkOnlyNoJump">true면 좌우 이동만 (트리거 점프 스킵 방지).</param>
+    public void SetStoryInputLocked(bool locked, bool walkOnlyNoJump = false)
     {
         if (rb == null)
             rb = GetComponent<Rigidbody2D>();
@@ -156,25 +173,87 @@ public class PlayerMovement2D : MonoBehaviour
             return;
         }
 
-        if (locked == _storyInputLocked)
+        if (!locked)
+        {
+            if (!_storyFullInputLock && !_storyWalkOnlyLock)
+                return;
+
+            bool wasFull = _storyFullInputLock;
+            _storyFullInputLock = false;
+            _storyWalkOnlyLock  = false;
+            if (wasFull)
+            {
+                rb.gravityScale = _gravityScaleBeforeStoryLock;
+                _jumpInputBufferedUntil = -1f;
+                _wallJumpInputLockUntil = -1f;
+                _storyUnlockInputSuppressUntil = Time.time + 0.08f;
+            }
+            return;
+        }
+
+        if (walkOnlyNoJump)
+        {
+            if (_storyWalkOnlyLock && !_storyFullInputLock)
+                return;
+            if (_storyFullInputLock)
+            {
+                rb.gravityScale = _gravityScaleBeforeStoryLock;
+                _jumpInputBufferedUntil = -1f;
+                _wallJumpInputLockUntil = -1f;
+            }
+            _storyWalkOnlyLock  = true;
+            _storyFullInputLock = false;
+            return;
+        }
+
+        if (_storyFullInputLock)
             return;
 
-        _storyInputLocked = locked;
-        if (locked)
-        {
-            _gravityScaleBeforeStoryLock = rb.gravityScale;
-            rb.gravityScale = 0f;
-            rb.linearVelocity = Vector2.zero;
-            rb.angularVelocity = 0f;
-        }
-        else
-        {
-            rb.gravityScale = _gravityScaleBeforeStoryLock;
-            _jumpInputBufferedUntil = -1f;
-            _wallJumpInputLockUntil = -1f;
-            _storyUnlockInputSuppressUntil = Time.time + 0.08f;
-        }
+        _storyWalkOnlyLock = false;
+        _storyFullInputLock = true;
+        _gravityScaleBeforeStoryLock = rb.gravityScale;
+        rb.gravityScale = 0f;
+        rb.linearVelocity = Vector2.zero;
+        rb.angularVelocity = 0f;
     }
+
+    /// <summary>오프닝 시퀀스 템포. 전투 전까지 유지 — 해제는 <see cref="EndOpeningSequencePhysics"/>만 사용.</summary>
+    public void BeginOpeningSequencePhysics(float moveSpeedValue, float jumpVelocityValue, float groundAcceleration)
+    {
+        if (_openingSequencePhysicsActive)
+            return;
+        _savedMoveSpeedForOpening    = moveSpeed;
+        _savedJumpVelocityForOpening = jumpVelocity;
+        _openingPhysicsSnapshotValid = true;
+        _openingGroundAcceleration   = Mathf.Max(0f, groundAcceleration);
+        moveSpeed                    = moveSpeedValue;
+        jumpVelocity                 = jumpVelocityValue;
+        _openingSequencePhysicsActive = true;
+    }
+
+    /// <summary>전투 진입 등 — 오프닝 물리 복구. 스냅샷이 비정상이면 안전 기본값으로 회수.</summary>
+    public void EndOpeningSequencePhysics()
+    {
+        if (!_openingSequencePhysicsActive)
+            return;
+
+        if (_openingPhysicsSnapshotValid && _savedMoveSpeedForOpening > 0.01f)
+            moveSpeed = _savedMoveSpeedForOpening;
+        else
+            moveSpeed = FallbackMoveSpeedAfterOpening;
+
+        if (_openingPhysicsSnapshotValid && _savedJumpVelocityForOpening > 0.01f)
+            jumpVelocity = _savedJumpVelocityForOpening;
+        else
+            jumpVelocity = FallbackJumpVelocityAfterOpening;
+
+        _openingGroundAcceleration    = 0f;
+        _openingSequencePhysicsActive = false;
+        _openingPhysicsSnapshotValid  = false;
+    }
+
+    /// <summary>오프닝 물리 적용 중인지 (전투 게이트에서 사용).</summary>
+    public bool IsOpeningSequencePhysicsActive => _openingSequencePhysicsActive;
 
     private float ReadHorizontalRaw()
     {
@@ -185,7 +264,10 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void Update()
     {
-        if (_storyInputLocked)
+        if (_storyFullInputLock)
+            return;
+
+        if (_storyWalkOnlyLock)
             return;
 
         if (WasJumpPressedThisFrame())
@@ -238,7 +320,7 @@ public class PlayerMovement2D : MonoBehaviour
             return;
         }
 
-        if (_storyInputLocked)
+        if (_storyFullInputLock)
         {
             if (rb != null)
             {
@@ -260,6 +342,8 @@ public class PlayerMovement2D : MonoBehaviour
         WallProbe wallProbe = BuildWallProbe(hForWall);
 
         MovementPhase phase = ResolvePhase(floorGrounded, wallProbe);
+        if (_storyWalkOnlyLock && phase == MovementPhase.WallClimb)
+            phase = MovementPhase.Air;
 
         _currentPhase = phase;
         if (phase == MovementPhase.WallClimb)
@@ -293,7 +377,7 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (_storyInputLocked)
+        if (_storyFullInputLock)
             return;
 
         if (blinkController != null && blinkController.IsHitStopBlockingMovement)
@@ -389,6 +473,9 @@ public class PlayerMovement2D : MonoBehaviour
 
     private bool TryWallJump(int wallSide)
     {
+        if (_storyWalkOnlyLock)
+            return false;
+
         bool localBuffered = _jumpInputBufferedUntil > Time.time;
         bool blinkBuffered = blinkController != null && blinkController.HasBufferedJumpInput();
         if (!localBuffered && !blinkBuffered)
@@ -412,6 +499,9 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void TryNormalJump(bool canJump, bool floorGrounded, bool coyoteOk)
     {
+        if (_storyWalkOnlyLock)
+            return;
+
         bool localBuffered = _jumpInputBufferedUntil > Time.time;
         bool blinkBuffered = blinkController != null && blinkController.HasBufferedJumpInput();
         if (!localBuffered && !blinkBuffered)
@@ -460,6 +550,18 @@ public class PlayerMovement2D : MonoBehaviour
             targetVx *= AirHorizontalSpeedMultiplier;
 
         float accel = airStyle ? AirHorizontalAcceleration : 0f;
+        if (!airStyle && _openingSequencePhysicsActive && _openingGroundAcceleration > 0f)
+        {
+            float vx = Mathf.MoveTowards(
+                rb.linearVelocity.x,
+                targetVx,
+                _openingGroundAcceleration * Time.fixedDeltaTime);
+            Vector2 v = rb.linearVelocity;
+            v.x = vx;
+            rb.linearVelocity = v;
+            return;
+        }
+
         if (airStyle && accel > 0f)
         {
             float vx = Mathf.MoveTowards(

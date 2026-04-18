@@ -1,0 +1,1066 @@
+{
+  "storyKey": "Chapter1_Opening",
+  "lines": [
+    {
+      "id": 1,
+      "type": "FadeIn",
+      "duration": 1.5
+    },
+    {
+      "id": 2,
+      "type": "Narration",
+      "duration": 3.2,
+      "text": "비가 오는 날이면 현은\n항상 그 골목 생각을 했다."
+    },
+    {
+      "id": 3,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "넓지도 좁지도 않은 골목. 낡은 담벼락.\n그 끝에 서 있던 아이."
+    },
+    {
+      "id": 4,
+      "type": "Narration",
+      "duration": 2.8,
+      "text": "지금으로부터 9년 전이었다."
+    },
+    {
+      "id": 5,
+      "type": "Pause",
+      "duration": 1.2
+    },
+    {
+      "id": 6,
+      "type": "FadeOut",
+      "duration": 0.9
+    },
+    {
+      "id": 7,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 8,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "학교 앞은 소란스러웠다."
+    },
+    {
+      "id": 9,
+      "type": "Narration",
+      "duration": 4.2,
+      "text": "수업이 끝난 직후부터 하늘이 무너질 것처럼 비가 쏟아졌다.\n아이들이 처마 아래로 피했다.\n이름을 부르는 소리, 빗소리가 뒤섞였다."
+    },
+    {
+      "id": 10,
+      "type": "Pause",
+      "duration": 0.6
+    },
+    {
+      "id": 11,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "연서는 처마 끝에 혼자 서 있었다."
+    },
+    {
+      "id": 12,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "기다리는 게 아니었다. 그냥 서 있는 거였다.\n올 사람이 없다는 걸 알고 있었으니까."
+    },
+    {
+      "id": 13,
+      "type": "Narration",
+      "duration": 3.8,
+      "text": "아무것도 기대하지 않는 사람의 눈이었다.\n열 살짜리 아이의 눈이라고 하기엔 너무 조용한."
+    },
+    {
+      "id": 14,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 15,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "빗소리 사이로 발소리가 들렸다."
+    },
+    {
+      "id": 16,
+      "type": "Narration",
+      "duration": 1.8,
+      "text": "저벅. 저벅."
+    },
+    {
+      "id": 17,
+      "type": "Narration",
+      "duration": 3.0,
+      "text": "급하지 않았다. 뛰지 않았다.\n빗속을 천천히 걸어오는 소리였다."
+    },
+    {
+      "id": 18,
+      "type": "Pause",
+      "duration": 0.5
+    },
+    {
+      "id": 19,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "현이었다."
+    },
+    {
+      "id": 20,
+      "type": "Narration",
+      "duration": 4.2,
+      "text": "검은 후드에 롱코트. 빨간 우산을 들고,\n손을 주머니에 찌른 채,\n조금도 서두르지 않으며 걸어오고 있었다."
+    },
+    {
+      "id": 21,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "마치 비가 오지 않는 날처럼.\n처음부터 이리로 오려고 했던 사람처럼."
+    },
+    {
+      "id": 22,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 23,
+      "type": "Narration",
+      "duration": 3.8,
+      "text": "연서 앞에 멈췄다.\n우산이 연서 위로 펼쳐졌다.\n빗소리가 조금 멀어졌다."
+    },
+    {
+      "id": 24,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 25,
+      "type": "Dialogue",
+      "duration": 2.2,
+      "text": "\"여기서 뭐해.\"",
+      "speaker": "현"
+    },
+    {
+      "id": 26,
+      "type": "Dialogue",
+      "duration": 2.0,
+      "text": "\"집에 가자.\"",
+      "speaker": "현"
+    },
+    {
+      "id": 27,
+      "type": "Pause",
+      "duration": 0.6
+    },
+    {
+      "id": 28,
+      "type": "Narration",
+      "duration": 2.8,
+      "text": "연서는 대답하지 않았다.\n그냥 현의 옆으로 걸어갔다."
+    },
+    {
+      "id": 29,
+      "type": "Pause",
+      "duration": 0.6
+    },
+    {
+      "id": 30,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "골목을 꺾었을 때였다."
+    },
+    {
+      "id": 31,
+      "type": "Narration",
+      "duration": 3.0,
+      "text": "연서의 손이 우산 살을 잡았다.\n천천히, 현 쪽으로 밀었다."
+    },
+    {
+      "id": 32,
+      "type": "Narration",
+      "duration": 2.8,
+      "text": "현이 걸음을 멈췄다.\n우산이 자기 쪽으로 기울어져 있었다."
+    },
+    {
+      "id": 33,
+      "type": "Pause",
+      "duration": 0.6
+    },
+    {
+      "id": 34,
+      "type": "Dialogue",
+      "duration": 2.5,
+      "text": "\"…반만요.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 35,
+      "type": "Pause",
+      "duration": 1.0
+    },
+    {
+      "id": 36,
+      "type": "Narration",
+      "duration": 4.0,
+      "text": "현은 잠깐 연서를 봤다.\n열 살짜리 아이. 굳어있는 얼굴.\n그러나 손은 우산을 현 쪽으로 밀고 있는 아이."
+    },
+    {
+      "id": 37,
+      "type": "Pause",
+      "duration": 0.5
+    },
+    {
+      "id": 38,
+      "type": "Narration",
+      "duration": 4.5,
+      "text": "아무 말 하지 않았다.\n그냥 걸었다. 우산을 가운데로 옮겨 잡으며.\n둘이 나란히, 반씩 비를 맞으며, 골목을 걸었다."
+    },
+    {
+      "id": 39,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 40,
+      "type": "FadeOut",
+      "duration": 0.9
+    },
+    {
+      "id": 41,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 42,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "분식집은 골목 끝에 있었다."
+    },
+    {
+      "id": 43,
+      "type": "Narration",
+      "duration": 1.5,
+      "text": "꼬르륵."
+    },
+    {
+      "id": 44,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "소리가 났다. 연서가 굳었다. 현은 연서를 보지 않았다.\n그냥 분식집 문을 잡아당겼다."
+    },
+    {
+      "id": 45,
+      "type": "Dialogue",
+      "duration": 2.0,
+      "text": "\"들어와.\"",
+      "speaker": "현"
+    },
+    {
+      "id": 46,
+      "type": "Narration",
+      "duration": 3.2,
+      "text": "낡은 나무 의자. 빨간 플라스틱 쟁반.\n떡볶이 한 접시가 나왔다. 둘이 나란히 앉았다."
+    },
+    {
+      "id": 47,
+      "type": "Dialogue",
+      "duration": 2.0,
+      "text": "\"많이 먹어.\"",
+      "speaker": "현"
+    },
+    {
+      "id": 48,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "그게 전부였다."
+    },
+    {
+      "id": 49,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 50,
+      "type": "Narration",
+      "duration": 3.8,
+      "text": "연서는 창문 밖을 봤다. 비가 계속 내리고 있었다.\n잠깐. 그냥, 보통의 열 살짜리 아이의 눈이었다."
+    },
+    {
+      "id": 51,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 52,
+      "type": "FadeOut",
+      "duration": 0.9
+    },
+    {
+      "id": 53,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 54,
+      "type": "Narration",
+      "duration": 3.2,
+      "text": "분식집을 나오니 바람이 쌀쌀했다.\n가을비였다. 곧 겨울이 올 것이었다."
+    },
+    {
+      "id": 55,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "현이 걸음을 멈췄다.\n진열대에 목도리 몇 개가 걸려있었다.\n아무 말 없이 가게 안으로 들어갔다."
+    },
+    {
+      "id": 56,
+      "type": "Narration",
+      "duration": 3.0,
+      "text": "1분도 안 걸렸다.\n나올 때 손에 빨간 목도리가 들려있었다."
+    },
+    {
+      "id": 57,
+      "type": "Dialogue",
+      "duration": 2.0,
+      "text": "\"하고 다녀.\"",
+      "speaker": "현"
+    },
+    {
+      "id": 58,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "연서가 받았다. 빨간색이었다.\n목에 둘렀다."
+    },
+    {
+      "id": 59,
+      "type": "Dialogue",
+      "duration": 2.2,
+      "text": "\"…고마워요.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 60,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "현은 이미 걷고 있었다."
+    },
+    {
+      "id": 61,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 62,
+      "type": "Narration",
+      "duration": 2.2,
+      "text": "인생네컷 부스는 골목 어귀에 있었다."
+    },
+    {
+      "id": 63,
+      "type": "Narration",
+      "duration": 1.5,
+      "text": "연서가 멈췄다."
+    },
+    {
+      "id": 64,
+      "type": "Dialogue",
+      "duration": 1.8,
+      "text": "\"…오빠.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 65,
+      "type": "Narration",
+      "duration": 2.8,
+      "text": "말을 잇지 않았다.\n부스를 보다가 다시 신발 끝을 봤다."
+    },
+    {
+      "id": 66,
+      "type": "Dialogue",
+      "duration": 1.8,
+      "text": "\"아니에요.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 67,
+      "type": "Dialogue",
+      "duration": 2.0,
+      "text": "\"찍을 거야?\"",
+      "speaker": "현"
+    },
+    {
+      "id": 68,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "연서가 고개를 끄덕였다. 아주 조금. 겨우."
+    },
+    {
+      "id": 69,
+      "type": "Pause",
+      "duration": 0.5
+    },
+    {
+      "id": 70,
+      "type": "Narration",
+      "duration": 2.8,
+      "text": "좁은 부스 안에 둘이 들어갔다.\n카운트다운이 시작됐다."
+    },
+    {
+      "id": 71,
+      "type": "Narration",
+      "duration": 1.5,
+      "text": "찰칵."
+    },
+    {
+      "id": 72,
+      "type": "Pause",
+      "duration": 0.5
+    },
+    {
+      "id": 73,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "둘 다 굳어있었다. 어색하고 불균형한 사진이었다."
+    },
+    {
+      "id": 74,
+      "type": "Narration",
+      "duration": 1.8,
+      "text": "연서가 사진을 봤다."
+    },
+    {
+      "id": 75,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "웃었다."
+    },
+    {
+      "id": 76,
+      "type": "Narration",
+      "duration": 3.8,
+      "text": "소리 없이, 아주 잠깐, 입꼬리가 올라갔다.\n그게 전부였지만, 그게 전부이기에 충분했다."
+    },
+    {
+      "id": 77,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 78,
+      "type": "Dialogue",
+      "duration": 2.2,
+      "text": "\"…한 장 가져도 돼요?\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 79,
+      "type": "Dialogue",
+      "duration": 1.5,
+      "text": "\"그래.\"",
+      "speaker": "현"
+    },
+    {
+      "id": 80,
+      "type": "Narration",
+      "duration": 4.0,
+      "text": "연서가 사진을 반으로 잘랐다.\n한 장을 가졌다. 한 장을 현에게 내밀었다.\n현이 받았다. 주머니에 넣었다."
+    },
+    {
+      "id": 81,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 82,
+      "type": "FadeOut",
+      "duration": 0.9
+    },
+    {
+      "id": 83,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 84,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "우산 아래. 반씩 비를 맞으며."
+    },
+    {
+      "id": 85,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "아무 말 없었다. 그냥 걸었다.\n처음으로 어색하지 않은 침묵이었다."
+    },
+    {
+      "id": 86,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "그게 전부였다.\n그게 전부이기에 충분했다."
+    },
+    {
+      "id": 87,
+      "type": "Pause",
+      "duration": 1.0
+    },
+    {
+      "id": 88,
+      "type": "FadeOut",
+      "duration": 0.9
+    },
+    {
+      "id": 89,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 90,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "다음날이었다."
+    },
+    {
+      "id": 91,
+      "type": "Narration",
+      "duration": 3.8,
+      "text": "저녁이 됐다. 셋이 나란히 앉았다.\n처음으로 셋이 같이 밥을 먹었다.\n어색했다. 그래도 밥을 먹었다."
+    },
+    {
+      "id": 92,
+      "type": "Pause",
+      "duration": 0.6
+    },
+    {
+      "id": 93,
+      "type": "Dialogue",
+      "duration": 1.8,
+      "text": "\"…오빠.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 94,
+      "type": "Narration",
+      "duration": 1.8,
+      "text": "연서가 머리끈을 내밀었다."
+    },
+    {
+      "id": 95,
+      "type": "Dialogue",
+      "duration": 2.2,
+      "text": "\"묶어줄 수 있어요?\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 96,
+      "type": "Dialogue",
+      "duration": 1.8,
+      "text": "\"…앉아.\"",
+      "speaker": "현"
+    },
+    {
+      "id": 97,
+      "type": "Narration",
+      "duration": 3.0,
+      "text": "현이 머리를 잡았다. 서툴렀다.\n그냥 잡히는 대로 묶었다."
+    },
+    {
+      "id": 98,
+      "type": "Narration",
+      "duration": 1.8,
+      "text": "삐뚤었다."
+    },
+    {
+      "id": 99,
+      "type": "Dialogue",
+      "duration": 2.0,
+      "text": "\"이게 맞아?\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 100,
+      "type": "Dialogue",
+      "duration": 1.5,
+      "text": "\"아니요.\"",
+      "speaker": "현"
+    },
+    {
+      "id": 101,
+      "type": "Dialogue",
+      "duration": 1.5,
+      "text": "\"다시—\"",
+      "speaker": "현"
+    },
+    {
+      "id": 102,
+      "type": "Dialogue",
+      "duration": 1.8,
+      "text": "\"괜찮아요.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 103,
+      "type": "Narration",
+      "duration": 1.8,
+      "text": "그대로 뒀다."
+    },
+    {
+      "id": 104,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 105,
+      "type": "Dialogue",
+      "duration": 2.2,
+      "text": "\"내일도 해줄 수 있어요?\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 106,
+      "type": "Dialogue",
+      "duration": 1.8,
+      "text": "\"그래.\"",
+      "speaker": "현"
+    },
+    {
+      "id": 107,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "연서가 방으로 들어갔다.\n현은 소파에 그대로 앉아 있었다. 빗소리가 들렸다."
+    },
+    {
+      "id": 108,
+      "type": "Pause",
+      "duration": 1.0
+    },
+    {
+      "id": 109,
+      "type": "FadeOut",
+      "duration": 1.2
+    },
+    {
+      "id": 110,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 111,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "그리고 다음날 새벽이었다."
+    },
+    {
+      "id": 112,
+      "type": "Narration",
+      "duration": 2.8,
+      "text": "연서가 눈을 떴을 때 집이 너무 조용했다."
+    },
+    {
+      "id": 113,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "현의 방문을 열었다. 방이 비어있었다.\n어젯밤까지 있던 사람이 없었다."
+    },
+    {
+      "id": 114,
+      "type": "Dialogue",
+      "duration": 1.8,
+      "text": "\"아빠.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 115,
+      "type": "Dialogue",
+      "duration": 2.0,
+      "text": "\"오빠 어디갔어.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 116,
+      "type": "Pause",
+      "duration": 0.5
+    },
+    {
+      "id": 117,
+      "type": "Dialogue",
+      "duration": 2.8,
+      "text": "\"…군에서 데리러 왔대.\"",
+      "speaker": "아빠"
+    },
+    {
+      "id": 118,
+      "type": "Dialogue",
+      "duration": 2.0,
+      "text": "\"괜찮아.\"",
+      "speaker": "아빠"
+    },
+    {
+      "id": 119,
+      "type": "Pause",
+      "duration": 0.5
+    },
+    {
+      "id": 120,
+      "type": "Narration",
+      "duration": 3.2,
+      "text": "연서는 아빠를 봤다.\n빨간 목도리를 손으로 쥐었다. 꽉."
+    },
+    {
+      "id": 121,
+      "type": "Dialogue",
+      "duration": 2.0,
+      "text": "\"…네.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 122,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "굳어진 얼굴이었다."
+    },
+    {
+      "id": 123,
+      "type": "Pause",
+      "duration": 1.2
+    },
+    {
+      "id": 124,
+      "type": "FadeOut",
+      "duration": 0.9
+    },
+    {
+      "id": 125,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 126,
+      "type": "Narration",
+      "duration": 3.0,
+      "text": "그날부터였다.\n연서는 머리를 묶지 않았다."
+    },
+    {
+      "id": 127,
+      "type": "Narration",
+      "duration": 4.0,
+      "text": "다음날도, 그 다음날도, 그 후로도.\n머리끈은 서랍 안에 있었다.\n꺼내지 않았다. 버리지도 않았다."
+    },
+    {
+      "id": 128,
+      "type": "Pause",
+      "duration": 1.0
+    },
+    {
+      "id": 129,
+      "type": "FadeOut",
+      "duration": 1.2
+    },
+    {
+      "id": 130,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 131,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "1년이 지났다."
+    },
+    {
+      "id": 132,
+      "type": "Narration",
+      "duration": 3.0,
+      "text": "아빠가 가끔 현 얘기를 꺼냈다.\n연락이 닿지 않는다고 했다."
+    },
+    {
+      "id": 133,
+      "type": "Narration",
+      "duration": 4.0,
+      "text": "목도리 안쪽에 사진이 있었다.\n접힌 채로. 둘 다 굳어있는 사진.\n펴보지 않았다. 버리지도 않았다."
+    },
+    {
+      "id": 134,
+      "type": "Pause",
+      "duration": 1.0
+    },
+    {
+      "id": 135,
+      "type": "FadeOut",
+      "duration": 1.2
+    },
+    {
+      "id": 136,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 137,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "3년이 지났다."
+    },
+    {
+      "id": 138,
+      "type": "Narration",
+      "duration": 2.8,
+      "text": "연서는 가끔 비 오는 날 학교 앞에 서 있었다."
+    },
+    {
+      "id": 139,
+      "type": "Narration",
+      "duration": 2.8,
+      "text": "올 사람이 없다는 걸 알았다. 그냥 서 있었다."
+    },
+    {
+      "id": 140,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "저벅. 저벅."
+    },
+    {
+      "id": 141,
+      "type": "Narration",
+      "duration": 3.0,
+      "text": "소리가 들릴 것 같을 때가 있었다.\n들리지 않았다."
+    },
+    {
+      "id": 142,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "연서는 혼자 걸어서 집에 갔다."
+    },
+    {
+      "id": 143,
+      "type": "Pause",
+      "duration": 1.0
+    },
+    {
+      "id": 144,
+      "type": "FadeOut",
+      "duration": 1.2
+    },
+    {
+      "id": 145,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 146,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "5년이 지났다."
+    },
+    {
+      "id": 147,
+      "type": "Dialogue",
+      "duration": 2.8,
+      "text": "\"현이 잘 있겠지.\"",
+      "speaker": "아빠"
+    },
+    {
+      "id": 148,
+      "type": "Dialogue",
+      "duration": 2.2,
+      "text": "\"그럼요.\"",
+      "speaker": "연서"
+    },
+    {
+      "id": 149,
+      "type": "Pause",
+      "duration": 0.6
+    },
+    {
+      "id": 150,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "그날 밤 처음으로 사진을 꺼냈다. 폈다. 봤다.\n다시 접었다. 다시 넣었다."
+    },
+    {
+      "id": 151,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "잠이 오지 않았다."
+    },
+    {
+      "id": 152,
+      "type": "Pause",
+      "duration": 1.0
+    },
+    {
+      "id": 153,
+      "type": "FadeOut",
+      "duration": 1.5
+    },
+    {
+      "id": 154,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 155,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "7년이 지났다."
+    },
+    {
+      "id": 156,
+      "type": "Narration",
+      "duration": 3.0,
+      "text": "아빠가 죽었다."
+    },
+    {
+      "id": 157,
+      "type": "Narration",
+      "duration": 3.8,
+      "text": "조용했다. 너무 조용했다.\n연락도 없었다. 설명도 없었다. 그냥 없어졌다."
+    },
+    {
+      "id": 158,
+      "type": "Narration",
+      "duration": 3.2,
+      "text": "연서는 아빠의 흰 셔츠를 꺼냈다.\n입었다. 컸다. 그래도 입었다."
+    },
+    {
+      "id": 159,
+      "type": "Narration",
+      "duration": 2.8,
+      "text": "빨간 목도리를 했다. 사진을 안쪽에 넣었다."
+    },
+    {
+      "id": 160,
+      "type": "Pause",
+      "duration": 1.2
+    },
+    {
+      "id": 161,
+      "type": "FadeOut",
+      "duration": 1.5
+    },
+    {
+      "id": 162,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 163,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "9년이 지났다."
+    },
+    {
+      "id": 164,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 165,
+      "type": "Narration",
+      "duration": 3.8,
+      "text": "연서는 금고 앞에 앉아 있었다.\n아빠가 남긴 금고. 열아홉 번째 생일에 열리는 금고."
+    },
+    {
+      "id": 166,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "잠금장치가 풀렸다."
+    },
+    {
+      "id": 167,
+      "type": "Narration",
+      "duration": 2.2,
+      "text": "연서는 잠깐 눈을 감았다."
+    },
+    {
+      "id": 168,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "열었다."
+    },
+    {
+      "id": 169,
+      "type": "Pause",
+      "duration": 1.2
+    },
+    {
+      "id": 170,
+      "type": "FadeOut",
+      "duration": 0.9
+    },
+    {
+      "id": 171,
+      "type": "FadeIn",
+      "duration": 0.9
+    },
+    {
+      "id": 172,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "9년이 지났다."
+    },
+    {
+      "id": 173,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "현은 빗속에 서 있었다. 비를 맞으며.\n주머니 안에 구겨진 협박 메시지가 있었다."
+    },
+    {
+      "id": 174,
+      "type": "Narration",
+      "duration": 2.5,
+      "text": "사진 한 장. 연서의 얼굴."
+    },
+    {
+      "id": 175,
+      "type": "Narration",
+      "duration": 3.0,
+      "text": "*작전명 우산. 네가 알지.*"
+    },
+    {
+      "id": 176,
+      "type": "Pause",
+      "duration": 0.8
+    },
+    {
+      "id": 177,
+      "type": "Narration",
+      "duration": 2.2,
+      "text": "알았다."
+    },
+    {
+      "id": 178,
+      "type": "Pause",
+      "duration": 0.5
+    },
+    {
+      "id": 179,
+      "type": "Narration",
+      "duration": 2.0,
+      "text": "현은 걸었다."
+    },
+    {
+      "id": 180,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "뛰지 않았다. 급하지 않았다.\n빗속을 천천히, 조금도 서두르지 않으며."
+    },
+    {
+      "id": 181,
+      "type": "Narration",
+      "duration": 3.5,
+      "text": "처음부터 이리로 오려고 했던 사람처럼."
+    },
+    {
+      "id": 182,
+      "type": "Pause",
+      "duration": 1.2
+    },
+    {
+      "id": 183,
+      "type": "FadeOut",
+      "duration": 1.5
+    }
+  ]
+}

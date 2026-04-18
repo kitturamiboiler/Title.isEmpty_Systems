@@ -44,6 +44,8 @@ public class CutscenePlayer : MonoBehaviour
         public string           speaker  = "";           // Dialogue 타입일 때만 사용
         [Tooltip("라인 표시 지속 시간(초). 0이면 타입 기본값 사용.")]
         public float            duration = 0f;
+        [Tooltip("JSON/스토리 라인 id. 0이면 미사용.")]
+        public int              lineId   = 0;
     }
 
     // ─── 직렬화 ───────────────────────────────────────────────────────────────
@@ -136,7 +138,7 @@ public class CutscenePlayer : MonoBehaviour
         switch (line.type)
         {
             case CutsceneLineType.Narration:
-                yield return ShowNarration(line.text, dur);
+                yield return ShowNarration(line.text, dur, line.lineId);
                 break;
 
             case CutsceneLineType.Dialogue:
@@ -153,7 +155,15 @@ public class CutscenePlayer : MonoBehaviour
                 break;
 
             case CutsceneLineType.FadeIn:
-                yield return FadeOverlay(1f, 0f, dur);
+                if (line.lineId == StoryJsonManager.Chapter1OpeningFinalizeFadeInLineId)
+                {
+                    if (FadeManager.Instance != null)
+                        yield return FadeManager.Instance.FadeToBlackAndFinalizeOpening(dur);
+                    else
+                        yield return FadeOverlay(0f, 1f, dur);
+                }
+                else
+                    yield return FadeOverlay(1f, 0f, dur);
                 break;
 
             case CutsceneLineType.Confirm:
@@ -164,16 +174,25 @@ public class CutscenePlayer : MonoBehaviour
 
     // ─── 나레이션 ─────────────────────────────────────────────────────────────
 
-    private IEnumerator ShowNarration(string text, float holdDuration)
+    private IEnumerator ShowNarration(string text, float holdDuration, int lineId = 0)
     {
         if (_dialogueGroup  != null) _dialogueGroup.alpha  = 0f;
-        if (_narrationText  != null) _narrationText.text   = text;
+        string display = lineId == StoryJsonManager.Chapter1OnomatopoeiaLineId
+            ? StoryJsonManager.FormatOnomatopoeiaNarration(text)
+            : text;
+        if (_narrationText != null)
+        {
+            _narrationText.richText = lineId == StoryJsonManager.Chapter1OnomatopoeiaLineId;
+            _narrationText.text     = display;
+        }
         if (_narrationGroup != null) _narrationGroup.alpha = 0f;
 
         _skipCurrentLine = false;
         yield return FadeGroup(_narrationGroup, 0f, 1f, _textFadeDuration);
         yield return HoldWithSkip(holdDuration);
         yield return FadeGroup(_narrationGroup, 1f, 0f, _textFadeDuration);
+        if (_narrationText != null)
+            _narrationText.richText = false;
     }
 
     // ─── 대화 ─────────────────────────────────────────────────────────────────

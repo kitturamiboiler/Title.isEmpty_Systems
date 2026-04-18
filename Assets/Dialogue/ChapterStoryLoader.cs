@@ -4,8 +4,9 @@ using static CutscenePlayer;
 
 /// <summary>
 /// TriggerCutscene와 같은 GameObject에 붙이는 컴패니언 컴포넌트.
-/// Inspector에서 챕터 키를 선택하면 StoryDatabase에서 라인을 읽어
+/// Inspector에서 챕터 키를 선택하면 라인을 읽어
 /// TriggerCutscene._cutsceneLines에 자동 주입한다.
+/// Chapter1_Opening은 <see cref="StoryJsonManager"/> JSON 우선, 실패 시 StoryDatabase 폴백.
 ///
 /// 사용법:
 ///   1. TriggerCutscene GameObject에 ChapterStoryLoader를 Add Component.
@@ -18,31 +19,6 @@ using static CutscenePlayer;
 [RequireComponent(typeof(TriggerCutscene))]
 public class ChapterStoryLoader : MonoBehaviour
 {
-    public enum StoryKey
-    {
-        None,
-
-        // ── 블로킹 컷씬 ────────────────────────────────────────────────────
-        Chapter1_Opening,           // 1장 전체 (스킵 불가)
-        Chapter2_Safe,              // 2장 금고
-        Chapter3_Decision,          // 3장 결심 (탈출 직전)
-        Chapter4_PreBoss,           // 4장 하운드 보스 전
-        Chapter4_PostBoss,          // 4장 하운드 보스 후
-        Chapter5_Captive,           // 5장 감금
-        Chapter6_PreBoss,           // 6장 서류 보스 전
-        Chapter6_PostBoss,          // 6장 서류 보스 후
-        Chapter7_BadgeDiscovery,    // 7장 견장 발견
-        Chapter8_Helicopter,        // 8장 헬기 장면
-        Chapter8_PostFight,         // 8장 전투 후 출발
-        Chapter9_Mechanic,          // 9장 야장
-        Chapter10_PreBoss,          // 10장 형 보스 전
-        Chapter10_Reveal,           // 10장 폭로 + 현·연서 대화
-        Chapter11_Collapse,         // 11장 현 쓰러짐 (Shadow 보스 전)
-        Chapter11_Acceptance,       // 11장 그림자와 화해 (Shadow 보스 내면)
-        Chapter11_Awakening,        // 11장 각성 (Shadow 보스 후)
-        Chapter12_Opening,          // 12장 설계자 옥상 오프닝
-    }
-
     // ─── 직렬화 ───────────────────────────────────────────────────────────────
 
     [Header("불러올 스토리 시퀀스")]
@@ -84,7 +60,13 @@ public class ChapterStoryLoader : MonoBehaviour
     {
         switch (key)
         {
-            case StoryKey.Chapter1_Opening:        return StoryDatabase.GetChapter1Lines();
+            case StoryKey.Chapter1_Opening:
+                if (StoryJsonManager.TryLoadCutsceneLines(StoryKey.Chapter1_Opening, out var ch1Json) &&
+                    ch1Json != null &&
+                    ch1Json.Count > 0)
+                    return ch1Json;
+                Debug.LogWarning("[ChapterStoryLoader] Chapter1_Opening JSON 로드 실패 — StoryDatabase 폴백 (앞 53라인만).");
+                return StoryJsonManager.CopyChapter1OpeningSliceFirst53(StoryDatabase.GetChapter1Lines());
             case StoryKey.Chapter2_Safe:           return StoryDatabase.GetChapter2Lines();
             case StoryKey.Chapter3_Decision:       return StoryDatabase.GetChapter3_DecisionLines();
             case StoryKey.Chapter4_PreBoss:        return StoryDatabase.GetChapter4_PreBossLines();

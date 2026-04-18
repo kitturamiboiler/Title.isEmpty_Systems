@@ -156,12 +156,8 @@ public class EnemyBossPaper : BossStateMachine
         Vector2 impactPoint = groundHit.point;
 
         var buf = new Collider2D[8];
-        int count = Physics2D.OverlapCircleNonAlloc(
-            impactPoint,
-            _stampAoeRadius,
-            buf,
-            1 << Layers.Player
-        );
+        var filter = Physics2DQueryUtil.Filter((LayerMask)(1 << Layers.Player));
+        int count = Physics2D.OverlapCircle(impactPoint, _stampAoeRadius, filter, buf);
         for (int i = 0; i < count; i++)
             buf[i].GetComponentInParent<IHealth>()?.TakeDamage(_stampDamage);
 

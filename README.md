@@ -20,3 +20,5 @@
 * [📅 2026-04-04: Git 정리·Unity 씬/폴더 구조·Pixel Perfect·단검 물리](./docs/devlog/2026-04-04_Fix_Summary.md)
 
 * [📅 2026-04-12: 챕터1 그레이박스·오프닝 시스템·환경 연출 (PM 요약)](./docs/devlog/2026-04-12_Chapter1_GrayBox_Space_Systems.md)
+
+* [📅 2026-04-18: 오프닝 JSON 파이프라인·AutoStart 선행 동작·폰트 베이킹·의성어/암전 UI](./docs/devlog/2026-04-18_Opening_JSON_Font.md)

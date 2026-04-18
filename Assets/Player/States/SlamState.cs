@@ -302,12 +302,8 @@ public class SlamState : IState2D
     {
         if (_weaponData == null || _weaponData.slamEnemyLayerMask.value == 0) return;
 
-        int count = Physics2D.OverlapCircleNonAlloc(
-            center,
-            _weaponData.slamRadius,
-            _overlapBuffer,
-            _weaponData.slamEnemyLayerMask
-        );
+        var slamFilter = Physics2DQueryUtil.Filter(_weaponData.slamEnemyLayerMask);
+        int count = Physics2D.OverlapCircle(center, _weaponData.slamRadius, slamFilter, _overlapBuffer);
 
         for (int i = 0; i < count; i++)
         {
@@ -384,9 +380,8 @@ public class SlamState : IState2D
 
         // 검색 반경 = slamRadius × 1.8 (슬램 범위보다 넓게)
         float searchRadius = _weaponData.slamRadius * 1.8f;
-        int count = Physics2D.OverlapCircleNonAlloc(
-            center, searchRadius, _overlapBuffer, _weaponData.slamEnemyLayerMask
-        );
+        var collateralFilter = Physics2DQueryUtil.Filter(_weaponData.slamEnemyLayerMask);
+        int count = Physics2D.OverlapCircle(center, searchRadius, collateralFilter, _overlapBuffer);
 
         float closest = float.MaxValue;
         Collider2D nearestCol = null;

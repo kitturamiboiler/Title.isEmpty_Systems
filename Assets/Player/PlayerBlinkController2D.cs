@@ -494,14 +494,13 @@ public class PlayerBlinkController2D : MonoBehaviour
     }
 
     /// <summary>
-    /// 블링크 경로 스윕 + 도착 오버랩으로 적 타격. NonAlloc만 사용.
+    /// 블링크 경로 스윕 + 도착 오버랩으로 적 타격. 사전 할당 버퍼 + ContactFilter2D.
     /// </summary>
     private void ProcessBlinkEnemyInteractions(Vector2 from, Vector2 to)
     {
         if (weaponData == null || weaponData.blinkEnemyLayerMask.value == 0)
             return;
 
-        int mask = weaponData.blinkEnemyLayerMask.value;
         float sweepR = weaponData.blinkEnemySweepRadius;
         float destR = weaponData.blinkDestinationEnemyRadius;
 
@@ -512,7 +511,8 @@ public class PlayerBlinkController2D : MonoBehaviour
         float mag = delta.magnitude;
         Vector2 dir = mag > 1e-5f ? delta / mag : Vector2.right;
 
-        int sweepCount = Physics2D.CircleCastNonAlloc(from, sweepR, dir, BlinkSweepHits, mag, mask);
+        var blinkFilter = Physics2DQueryUtil.Filter(weaponData.blinkEnemyLayerMask);
+        int sweepCount = Physics2D.CircleCast(from, sweepR, dir, blinkFilter, BlinkSweepHits, mag);
         for (int i = 0; i < sweepCount; i++)
         {
             Collider2D c = BlinkSweepHits[i].collider;
@@ -522,7 +522,7 @@ public class PlayerBlinkController2D : MonoBehaviour
             if (ApplyBlinkHitToEnemy(c.gameObject, ref rewarded)) return; // Grab 트리거 시 즉시 중단
         }
 
-        int overlapCount = Physics2D.OverlapCircleNonAlloc(to, destR, BlinkOverlapBuffer, mask);
+        int overlapCount = Physics2D.OverlapCircle(to, destR, blinkFilter, BlinkOverlapBuffer);
         for (int i = 0; i < overlapCount; i++)
         {
             Collider2D c = BlinkOverlapBuffer[i];

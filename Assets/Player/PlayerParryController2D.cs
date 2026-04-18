@@ -114,11 +114,12 @@ public class PlayerParryController2D : MonoBehaviour
         if (_hasParried) return;
 
         // ── 1순위: 투사체 패리 (기존) ─────────────────────────────────────────
-        int count = Physics2D.OverlapCircleNonAlloc(
+        var filterDefault = Physics2DQueryUtil.DefaultLayersFilter();
+        int count = Physics2D.OverlapCircle(
             transform.position,
             _weaponData != null ? _weaponData.parryRadius : 1.2f,
-            _overlapBuffer
-        );
+            filterDefault,
+            _overlapBuffer);
 
         for (int i = 0; i < count; i++)
         {
@@ -139,9 +140,8 @@ public class PlayerParryController2D : MonoBehaviour
         // ── 2순위: 근접 공격 패리 (IParryableMelee) ──────────────────────────
         // 별도의 더 좁은 반경으로 재검색 — 근접 공격은 거의 밀착 상태
         float meleeRadius = _weaponData != null ? _weaponData.parryMeleeRadius : 0.9f;
-        int meleeCount = Physics2D.OverlapCircleNonAlloc(
-            transform.position, meleeRadius, _overlapBuffer
-        );
+        int meleeCount = Physics2D.OverlapCircle(
+            transform.position, meleeRadius, filterDefault, _overlapBuffer);
 
         for (int i = 0; i < meleeCount; i++)
         {

@@ -112,6 +112,11 @@ public class OpeningEventController : MonoBehaviour
         if (_playerRb == null)
             _playerRb = _playerMovement.GetComponent<Rigidbody2D>();
 
+        _playerMovement.BeginOpeningSequencePhysics(
+            OpeningSequencePhysicsDefaults.MoveSpeed,
+            OpeningSequencePhysicsDefaults.JumpVelocity,
+            OpeningSequencePhysicsDefaults.GroundAcceleration);
+
         yield return WaitUntilPlayerFlooredOrSnapped();
 
         if (_landingSequenceDidSnap)

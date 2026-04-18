@@ -57,6 +57,11 @@ public class CombatDialogueUI : MonoBehaviour
     [SerializeField] private Color _colorYeonsseo = new Color(1f, 0.75f, 0.4f);  // 연서 — 앰버
     [SerializeField] private Color _colorBoss     = new Color(1f, 0.4f, 0.4f);   // 보스 — 붉은
 
+    [Header("Ambient Onomatopoeia (ShowAmbientOnomatopoeia)")]
+    [Tooltip("일반 대사 대비 배경 Image 알파에 곱함 — 0.5면 약 50% 더 투명하게.")]
+    [SerializeField] [Range(0.1f, 1f)] private float _ambientPanelBackgroundAlphaScale = 0.5f;
+    [SerializeField] private Color _ambientOnomatopoeiaLineColor = new Color(0.68f, 0.7f, 0.74f, 0.88f);
+
     // ─── 우선순위 정의 (H1) ───────────────────────────────────────────────────
 
     public enum DialoguePriority
@@ -75,6 +80,7 @@ public class CombatDialogueUI : MonoBehaviour
         public float           holdTime;
         public DialoguePriority priority;
         public Sprite          portrait;
+        public bool            ambientOnomatopoeia;
     }
 
     private const int MAX_QUEUE_SIZE = 4;
@@ -124,6 +130,7 @@ public class CombatDialogueUI : MonoBehaviour
             holdTime = resolvedHold,
             priority = priority,
             portrait = portrait,
+            ambientOnomatopoeia = false,
         };
 
         // Story: 모든 것을 즉시 중단하고 표시
@@ -149,6 +156,54 @@ public class CombatDialogueUI : MonoBehaviour
 
         if (!_isShowing)
             _displayRoutine = StartCoroutine(DrainQueue());
+    }
+
+    /// <summary>의성어·환경음 한 줄 (이탤릭 rich text, 화자는 환경음).</summary>
+    public void ShowAmbientOnomatopoeia(
+        string           rawText,
+        float            holdTime = 0f,
+        DialoguePriority priority  = DialoguePriority.Story)
+    {
+        float resolvedHold = holdTime > 0f ? holdTime : _defaultHoldTime;
+        string rich          = StoryJsonManager.FormatOnomatopoeiaNarration(rawText);
+        var line = new DialogueLine
+        {
+            speaker             = "환경음",
+            text                = rich,
+            holdTime            = resolvedHold,
+            priority            = priority,
+            portrait            = null,
+            ambientOnomatopoeia = true,
+        };
+
+        if (priority == DialoguePriority.Story)
+        {
+            _queue.Clear();
+            InterruptAndPlay(line);
+            return;
+        }
+
+        if (_isShowing && priority > _currentPriority)
+        {
+            InterruptAndPlay(line);
+            return;
+        }
+
+        if (_queue.Count >= MAX_QUEUE_SIZE)
+            DropLowestPriority();
+
+        _queue.Enqueue(line);
+
+        if (!_isShowing)
+            _displayRoutine = StartCoroutine(DrainQueue());
+    }
+
+    /// <summary>한 줄 표시가 끝날 때까지 대기 (스토리 구간 연출 등).</summary>
+    public System.Collections.IEnumerator WaitUntilNotShowing()
+    {
+        yield return null;
+        while (_isShowing)
+            yield return null;
     }
 
     /// <summary>현재 표시 중인 대사와 큐를 모두 지운다.</summary>
@@ -201,6 +256,32 @@ public class CombatDialogueUI : MonoBehaviour
         _currentPriority = line.priority;
         _isShowing       = true;
 
+        SnapDialoguePanelToIntegerPixels();
+
+        Color savedPanelBgColor = default;
+        bool  hasSavedPanelBgColor = false;
+        Color savedLineTextColor = default;
+        bool  hasSavedLineTextColor = false;
+
+        if (line.ambientOnomatopoeia)
+        {
+            if (_panelBackground != null)
+            {
+                hasSavedPanelBgColor = true;
+                savedPanelBgColor    = _panelBackground.color;
+                var c = savedPanelBgColor;
+                c.a *= _ambientPanelBackgroundAlphaScale;
+                _panelBackground.color = c;
+            }
+
+            if (_lineText != null)
+            {
+                hasSavedLineTextColor = true;
+                savedLineTextColor    = _lineText.color;
+                _lineText.color       = _ambientOnomatopoeiaLineColor;
+            }
+        }
+
         // 화자·텍스트 설정
         if (_speakerText != null)
         {
@@ -208,7 +289,11 @@ public class CombatDialogueUI : MonoBehaviour
             _speakerText.color = GetSpeakerColor(line.speaker);
         }
 
-        if (_lineText != null) _lineText.text = "";
+        if (_lineText != null)
+        {
+            _lineText.text = "";
+            _lineText.richText = line.ambientOnomatopoeia;
+        }
 
         if (_portraitImage != null)
         {
@@ -219,8 +304,12 @@ public class CombatDialogueUI : MonoBehaviour
         // 패널 페이드 인
         yield return FadePanel(1f);
 
-        // 타이핑 효과
-        if (_charsPerSecond > 0f && _lineText != null)
+        // 타이핑 효과 (rich text 의성어는 태그 깨짐 방지로 즉시 전체 표시)
+        if (line.ambientOnomatopoeia && _lineText != null)
+        {
+            _lineText.text = line.text;
+        }
+        else if (_charsPerSecond > 0f && _lineText != null)
         {
             string full = line.text;
             int    len  = 0;
@@ -241,11 +330,28 @@ public class CombatDialogueUI : MonoBehaviour
 
         // 패널 페이드 아웃
         yield return FadePanel(0f);
+        if (hasSavedPanelBgColor && _panelBackground != null)
+            _panelBackground.color = savedPanelBgColor;
+        if (hasSavedLineTextColor && _lineText != null)
+            _lineText.color = savedLineTextColor;
+        if (_lineText != null)
+            _lineText.richText = false;
         _isShowing       = false;
         _currentPriority = DialoguePriority.Ambient;
     }
 
     // ─── 헬퍼 ─────────────────────────────────────────────────────────────────
+
+    private void SnapDialoguePanelToIntegerPixels()
+    {
+        if (_panelGroup == null)
+            return;
+        var rt = _panelGroup.transform as RectTransform;
+        if (rt == null)
+            return;
+        var p = rt.anchoredPosition3D;
+        rt.anchoredPosition3D = new Vector3(Mathf.Round(p.x), Mathf.Round(p.y), Mathf.Round(p.z));
+    }
 
     private IEnumerator FadePanel(float target)
     {
@@ -268,9 +374,10 @@ public class CombatDialogueUI : MonoBehaviour
         if (string.IsNullOrEmpty(speaker)) return _colorDefault;
         return speaker switch
         {
-            "현"  => _colorPlayer,
-            "연서" => _colorYeonsseo,
-            _     => _colorBoss,
+            "현"    => _colorPlayer,
+            "연서"  => _colorYeonsseo,
+            "환경음" => new Color(0.72f, 0.72f, 0.75f),
+            _       => _colorBoss,
         };
     }
 }

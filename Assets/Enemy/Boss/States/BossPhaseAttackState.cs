@@ -150,12 +150,12 @@ public class BossPhaseAttackState : BossState
 
         // 충격파 범위 데미지
         var buf = new Collider2D[16];
-        int count = Physics2D.OverlapCircleNonAlloc(
+        var filter = Physics2DQueryUtil.Filter((LayerMask)(1 << Layers.Player));
+        int count = Physics2D.OverlapCircle(
             Machine.transform.position,
             Data.groundPoundRadius,
-            buf,
-            1 << Layers.Player
-        );
+            filter,
+            buf);
         for (int i = 0; i < count; i++)
             buf[i].GetComponentInParent<IHealth>()?.TakeDamage(Data.groundPoundDamage);
 

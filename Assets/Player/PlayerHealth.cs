@@ -13,6 +13,7 @@ public class PlayerHealth : MonoBehaviour, IHealth
     [Header("Refs")]
     [SerializeField] private WeaponData _weaponData;
     [SerializeField] private SpriteRenderer _spriteRenderer;
+    [SerializeField] private PlayerMovement2D _playerMovement;
 
     [Header("Lives")]
     [Tooltip("플레이어 목숨 수. 기본 3.")]
@@ -49,6 +50,8 @@ public class PlayerHealth : MonoBehaviour, IHealth
     {
         if (_spriteRenderer == null)
             _spriteRenderer = GetComponent<SpriteRenderer>();
+        if (_playerMovement == null)
+            _playerMovement = GetComponent<PlayerMovement2D>();
 
         if (_maxLives <= 0)
         {
@@ -76,6 +79,9 @@ public class PlayerHealth : MonoBehaviour, IHealth
             Debug.LogWarning($"[PlayerHealth] 비양수 데미지({damage}) 입력 — {gameObject.name}. 무시.");
             return;
         }
+
+        if (_playerMovement != null && _playerMovement.IsOpeningSequencePhysicsActive)
+            _playerMovement.EndOpeningSequencePhysics();
 
         CurrentLives--;
         CurrentLives = Mathf.Max(CurrentLives, 0);

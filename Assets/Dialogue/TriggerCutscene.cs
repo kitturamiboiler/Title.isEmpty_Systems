@@ -260,6 +260,14 @@ public class TriggerCutscene : MonoBehaviour
     // ─── 공개 주입 API (ChapterStoryLoader 등 외부에서 사용) ──────────────────
 
     /// <summary>
+    /// 플레이어 충돌 없이 컷씬을 점화한다 (<see cref="AutoStartSequence"/> 등).
+    /// </summary>
+    public void Play()
+    {
+        ActivateTrigger();
+    }
+
+    /// <summary>
     /// 런타임에서 컷씬 라인을 덮어쓴다.
     /// ChapterStoryLoader가 StoryDatabase 데이터를 주입할 때 사용.
     /// </summary>
