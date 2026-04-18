@@ -1,1 +1,2 @@
 *.ttc filter=lfs diff=lfs merge=lfs -text
+Assets/Fonts/ch01.asset filter=lfs diff=lfs merge=lfs -text
