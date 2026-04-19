@@ -27,6 +27,7 @@ public class PlayerParryController2D : MonoBehaviour
     // ─── 캐시 ─────────────────────────────────────────────────────────────────
 
     private PlayerBlinkController2D _blinkCtrl;
+    private PlayerMovement2D _movement;
 
     // ─── 패리 상태 ────────────────────────────────────────────────────────────
 
@@ -57,6 +58,7 @@ public class PlayerParryController2D : MonoBehaviour
 
     private void Awake()
     {
+        _movement = GetComponent<PlayerMovement2D>();
         _blinkCtrl = GetComponent<PlayerBlinkController2D>();
         if (_blinkCtrl == null)
             Debug.LogError($"[PlayerParryController2D] PlayerBlinkController2D missing on {gameObject.name}");
@@ -76,6 +78,10 @@ public class PlayerParryController2D : MonoBehaviour
     private void HandleInput()
     {
         if (_storyInputLocked)
+            return;
+        if (_movement != null && _movement.IsCutsceneModeActive)
+            return;
+        if (_movement != null && _movement.IsResumeInputSuppressActive)
             return;
         if (_isCooling || _isActive) return;
         if (_weaponData == null) return;

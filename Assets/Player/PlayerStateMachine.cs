@@ -48,8 +48,15 @@ public class PlayerStateMachine : MonoBehaviour, IBindable
     /// <summary>현재 활성 State. 외부에서 직접 교체 금지.</summary>
     public IState2D CurrentState { get; private set; }
 
+    PlayerMovement2D _playerMovement;
+
+    /// <summary>컷신 게이트 등 — Idle/Run 외 상태에서 참조.</summary>
+    public PlayerMovement2D PlayerMovement => _playerMovement;
+
     private void Awake()
     {
+        _playerMovement = GetComponent<PlayerMovement2D>();
+
         var rb        = GetComponent<Rigidbody2D>();
         var col       = GetComponent<Collider2D>();
         var blinkCtrl = GetComponent<PlayerBlinkController2D>();
@@ -132,6 +139,14 @@ public class PlayerStateMachine : MonoBehaviour, IBindable
     private void FixedUpdate()
     {
         CurrentState?.FixedTick();
+    }
+
+    /// <summary>Idle⇄Run 전이용 수평 축 — 컷신 가상 입력과 회수 억제 창을 반영한다.</summary>
+    public float GetMovementHorizontalAxis()
+    {
+        if (_playerMovement != null)
+            return _playerMovement.GetMovementHorizontalAxis();
+        return Input.GetAxisRaw("Horizontal");
     }
 
     /// <summary>플레이어 Animator 트리거. 해시는 <see cref="PlayerAnimHashes"/>.</summary>

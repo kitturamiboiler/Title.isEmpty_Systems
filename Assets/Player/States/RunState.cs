@@ -24,7 +24,7 @@ public class RunState : IState2D
 
     public void Tick()
     {
-        float h = Input.GetAxisRaw("Horizontal");
+        float h = _machine.GetMovementHorizontalAxis();
         if (Mathf.Abs(h) <= INPUT_DEAD_ZONE)
             _machine.ChangeState(_machine.Idle);
     }

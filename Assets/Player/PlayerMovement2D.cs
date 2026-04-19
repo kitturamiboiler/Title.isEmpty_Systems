@@ -5,7 +5,7 @@ using UnityEngine;
 /// 상태: Grounded / Air / WallClimb — FixedUpdate에서 분리 처리.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
-public class PlayerMovement2D : MonoBehaviour
+public class PlayerMovement2D : MonoBehaviour, IPlayerCutsceneHandoff
 {
     private enum MovementPhase
     {
@@ -133,6 +133,15 @@ public class PlayerMovement2D : MonoBehaviour
     /// <summary>스토리 잠금 해제 직후 잡고 있던 수평 입력이 한꺼번에 물리에 반영되는 것을 완화.</summary>
     private float _storyUnlockInputSuppressUntil = -1f;
 
+    /// <summary><see cref="ApplyResumeInputSuppressPulse"/> — 컷신 재개 직후 연타 방어.</summary>
+    float _resumeInputSuppressUntil = -1f;
+
+    /// <summary>컷신·튜토리얼에서 실제 입력 무시, 가상 축만 물리에 반영.</summary>
+    bool _cutsceneModeActive;
+
+    /// <summary>컷신 스크립트가 매 프레임 주입하는 이동 의도(-1~1).</summary>
+    Vector2 _virtualMoveInput;
+
     private void Awake()
     {
         if (rb == null)
@@ -145,6 +154,83 @@ public class PlayerMovement2D : MonoBehaviour
             _stateMachine = GetComponent<PlayerStateMachine>();
 
         _defaultGravityScale = rb.gravityScale;
+    }
+
+    /// <inheritdoc/>
+    public void SetCutsceneMode(bool isCutscene)
+    {
+        if (rb == null)
+            rb = GetComponent<Rigidbody2D>();
+
+        _cutsceneModeActive = isCutscene;
+        _virtualMoveInput = Vector2.zero;
+
+        _jumpInputBufferedUntil = -1f;
+        _wallJumpInputLockUntil = -1f;
+
+        if (blinkController != null)
+            blinkController.SyncCutsceneMode(isCutscene);
+
+        if (!isCutscene)
+        {
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
+            }
+            _storyUnlockInputSuppressUntil = Time.time + 0.12f;
+        }
+    }
+
+    /// <inheritdoc/>
+    public void InjectVirtualInput(Vector2 dir)
+    {
+        if (!_cutsceneModeActive)
+            return;
+        _virtualMoveInput = new Vector2(
+            Mathf.Clamp(dir.x, -1f, 1f),
+            Mathf.Clamp(dir.y, -1f, 1f));
+    }
+
+    /// <summary>인스펙터 우클릭 — 컷신 모드 진입 (매개변수 없는 메뉴 진입용).</summary>
+    [ContextMenu("Handoff/SetCutsceneMode ← TRUE")]
+    public void DebugCutsceneModeOn()
+    {
+        SetCutsceneMode(true);
+    }
+
+    /// <summary>인스펙터 우클릭 — 컷신 모드 해제 및 속도·버퍼 회수.</summary>
+    [ContextMenu("Handoff/SetCutsceneMode ← FALSE")]
+    public void DebugCutsceneModeOff()
+    {
+        SetCutsceneMode(false);
+    }
+
+    /// <summary>컷신 모드 여부 — 패리·외부 게이트에서 참조.</summary>
+    public bool IsCutsceneModeActive => _cutsceneModeActive;
+
+    /// <summary>컷신 <c>ResumeFromID</c> 직후 일정 시간 물리·버퍼 입력 무시.</summary>
+    /// <param name="durationSeconds">실시간 초 기준.</param>
+    public void ApplyResumeInputSuppressPulse(float durationSeconds)
+    {
+        float dur = Mathf.Max(0f, durationSeconds);
+        float until = Time.time + dur;
+        _resumeInputSuppressUntil = Mathf.Max(_resumeInputSuppressUntil, until);
+        _storyUnlockInputSuppressUntil = Mathf.Max(_storyUnlockInputSuppressUntil, until);
+        _jumpInputBufferedUntil = -1f;
+        if (blinkController != null)
+            blinkController.ApplyResumeInputSuppressPulse(durationSeconds);
+    }
+
+    /// <summary>재개 입력 억제 창 — 패리·점프 버퍼 게이트.</summary>
+    public bool IsResumeInputSuppressActive =>
+        !_cutsceneModeActive
+        && Time.time < Mathf.Max(_storyUnlockInputSuppressUntil, _resumeInputSuppressUntil);
+
+    /// <summary>FSM Idle⇄Run 및 물리 이동과 동일한 수평 축(컷신 가상 입력 포함).</summary>
+    public float GetMovementHorizontalAxis()
+    {
+        return ReadHorizontalRaw();
     }
 
     /// <summary>블링크/투척 로직에서 벽 타기는 지상·코요테와 동일하게 '벽 접촉'으로 취급.</summary>
@@ -255,9 +341,12 @@ public class PlayerMovement2D : MonoBehaviour
     /// <summary>오프닝 물리 적용 중인지 (전투 게이트에서 사용).</summary>
     public bool IsOpeningSequencePhysicsActive => _openingSequencePhysicsActive;
 
-    private float ReadHorizontalRaw()
+    float ReadHorizontalRaw()
     {
-        if (Time.time < _storyUnlockInputSuppressUntil)
+        if (_cutsceneModeActive)
+            return Mathf.Clamp(_virtualMoveInput.x, -1f, 1f);
+        float denyUntil = Mathf.Max(_storyUnlockInputSuppressUntil, _resumeInputSuppressUntil);
+        if (Time.time < denyUntil)
             return 0f;
         return Input.GetAxisRaw("Horizontal");
     }
@@ -268,6 +357,13 @@ public class PlayerMovement2D : MonoBehaviour
             return;
 
         if (_storyWalkOnlyLock)
+            return;
+
+        if (_cutsceneModeActive)
+            return;
+
+        float denyUntil = Mathf.Max(_storyUnlockInputSuppressUntil, _resumeInputSuppressUntil);
+        if (Time.time < denyUntil)
             return;
 
         if (WasJumpPressedThisFrame())
@@ -473,6 +569,8 @@ public class PlayerMovement2D : MonoBehaviour
 
     private bool TryWallJump(int wallSide)
     {
+        if (_cutsceneModeActive)
+            return false;
         if (_storyWalkOnlyLock)
             return false;
 
@@ -499,6 +597,8 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void TryNormalJump(bool canJump, bool floorGrounded, bool coyoteOk)
     {
+        if (_cutsceneModeActive)
+            return;
         if (_storyWalkOnlyLock)
             return;
 
@@ -522,8 +622,13 @@ public class PlayerMovement2D : MonoBehaviour
             _coyoteJumpConsumed = true;
     }
 
-    private static float ReadVerticalAxisRaw()
+    float ReadVerticalAxisRaw()
     {
+        if (_cutsceneModeActive)
+            return Mathf.Clamp(_virtualMoveInput.y, -1f, 1f);
+        float denyUntil = Mathf.Max(_storyUnlockInputSuppressUntil, _resumeInputSuppressUntil);
+        if (Time.time < denyUntil)
+            return 0f;
         return Input.GetAxisRaw("Vertical");
     }
 

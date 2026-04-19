@@ -49,6 +49,9 @@ public class BlinkState : IState2D
             return;
         }
 
+        if (_machine.PlayerMovement != null && _machine.PlayerMovement.IsCutsceneModeActive)
+            return;
+
         // Shift 입력 → 블링크 시도
         if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {

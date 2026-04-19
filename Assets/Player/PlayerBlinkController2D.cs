@@ -49,6 +49,10 @@ public class PlayerBlinkController2D : MonoBehaviour
     private Sprite _cachedSpriteBeforeUmbrella;
     private bool _hasUmbrellaOverrideActive;
     private bool _storyInputLocked;
+    /// <summary>컷신 중 마우스 투척·스페이스 버퍼 무시.</summary>
+    bool _cutsceneModeActive;
+    /// <summary><see cref="PlayerMovement2D.ApplyResumeInputSuppressPulse"/>와 동기화.</summary>
+    float _resumeInputBlockUntil = -1f;
     private Coroutine _umbrellaSquashCoroutine;
     private Transform _squashVisual;
     private Vector3 _squashVisualBaseLocal;
@@ -204,6 +208,23 @@ public class PlayerBlinkController2D : MonoBehaviour
             _jumpInputBufferedUntil = -1f;
     }
 
+    /// <summary>
+    /// <see cref="PlayerMovement2D.SetCutsceneMode"/>와 동기화. 버퍼를 즉시 비운다.
+    /// </summary>
+    public void SyncCutsceneMode(bool active)
+    {
+        _cutsceneModeActive = active;
+        _jumpInputBufferedUntil = -1f;
+    }
+
+    /// <summary>컷신 재개 직후 스페이스 연타 버퍼·투척 차단.</summary>
+    public void ApplyResumeInputSuppressPulse(float durationSeconds)
+    {
+        _jumpInputBufferedUntil = -1f;
+        float until = Time.time + Mathf.Max(0f, durationSeconds);
+        _resumeInputBlockUntil = Mathf.Max(_resumeInputBlockUntil, until);
+    }
+
     /// <summary>인스펙터에 할당된 우산 스프라이트로 교체한다. 복구는 RestoreSpriteAfterStory().</summary>
     public void ChangeToUmbrellaSprite()
     {
@@ -296,6 +317,10 @@ public class PlayerBlinkController2D : MonoBehaviour
     private void Update()
     {
         if (_storyInputLocked)
+            return;
+        if (_cutsceneModeActive)
+            return;
+        if (Time.time < _resumeInputBlockUntil)
             return;
 
         // GrabState · SlamState 진행 중 단검 투척·블링크 입력 차단
