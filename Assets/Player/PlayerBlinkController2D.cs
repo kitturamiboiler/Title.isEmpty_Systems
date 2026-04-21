@@ -921,12 +921,19 @@ public class PlayerBlinkController2D : MonoBehaviour
         // 주의: Project Settings > Physics 2D 에서 PlayerInvincible 레이어 충돌 매트릭스를 설정해야
         // 적 투사체/트랩과의 충돌 무시가 정상 동작한다.
         int invLayer  = Layers.PlayerInvincible;
-        int origLayer = Layers.Player;
 
-        if (invLayer == -1 || origLayer == -1)
+        // 원본 레이어는 호출 시점의 실제 레이어로 백업 (Awake에서도 캐싱되지만 상태 전이 중 바뀔 수 있음)
+        int origLayer = gameObject.layer;
+
+        if (invLayer == -1)
         {
-            Debug.LogWarning("[PlayerBlinkController2D] Layers.PlayerInvincible 또는 Layers.Player 가 -1입니다. " +
-                             "Project Settings > Tags and Layers에서 레이어를 확인하세요.");
+            Debug.LogWarning("[PlayerBlinkController2D] Layers.PlayerInvincible 가 -1. " +
+                             "Project Settings > Tags and Layers에서 레이어를 추가하세요.");
+            yield break;
+        }
+        if (invLayer == origLayer)
+        {
+            Debug.LogWarning("[PlayerBlinkController2D] 이미 무적 레이어 상태 — 중복 전환 방지.");
             yield break;
         }
 

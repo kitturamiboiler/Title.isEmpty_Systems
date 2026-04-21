@@ -174,18 +174,24 @@ public static class StoryJsonManager
     static CutsceneLineType ParseLineType(string s)
     {
         if (string.IsNullOrEmpty(s))
-            return CutsceneLineType.Narration;
-
-        return s switch
         {
-            "FadeIn" => CutsceneLineType.FadeIn,
-            "FadeOut" => CutsceneLineType.FadeOut,
-            "Pause" => CutsceneLineType.Pause,
-            "Narration" => CutsceneLineType.Narration,
-            "Dialogue" => CutsceneLineType.Dialogue,
-            "Confirm" => CutsceneLineType.Confirm,
-            _ => CutsceneLineType.Narration,
-        };
+            Debug.LogWarning("[StoryJsonManager] ParseLineType: type 필드가 빈 문자열 — Narration으로 폴백.");
+            return CutsceneLineType.Narration;
+        }
+
+        switch (s)
+        {
+            case "FadeIn":    return CutsceneLineType.FadeIn;
+            case "FadeOut":   return CutsceneLineType.FadeOut;
+            case "Pause":     return CutsceneLineType.Pause;
+            case "Narration": return CutsceneLineType.Narration;
+            case "Dialogue":  return CutsceneLineType.Dialogue;
+            case "Confirm":   return CutsceneLineType.Confirm;
+            default:
+                Debug.LogWarning(
+                    $"[StoryJsonManager] ParseLineType: 알 수 없는 type \"{s}\" — Narration으로 폴백. JSON 오타 여부를 확인하세요.");
+                return CutsceneLineType.Narration;
+        }
     }
 }
 

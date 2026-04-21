@@ -24,3 +24,5 @@
 * [📅 2026-04-18: 오프닝 JSON 파이프라인·AutoStart 선행 동작·폰트 베이킹·의성어/암전 UI](./docs/devlog/2026-04-18_Opening_JSON_Font.md)
 
 * [📅 2026-04-19: GameInitializer·Cutscene Resume UI 방어·조작 Handoff·스토리 트리거](./docs/devlog/2026-04-19.md)
+
+* [📅 2026-04-21: 코드 리뷰 기반 버그 수정 및 리팩터링 (암전 잔상·스킵 플래그·무적 레이어·패리 버퍼·StoryLineLoader)](./docs/devlog/2026-04-21_Bug_Fix_Code_Review.md)

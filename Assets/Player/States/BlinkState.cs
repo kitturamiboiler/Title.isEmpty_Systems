@@ -52,6 +52,9 @@ public class BlinkState : IState2D
         if (_machine.PlayerMovement != null && _machine.PlayerMovement.IsCutsceneModeActive)
             return;
 
+        if (_machine.PlayerMovement != null && _machine.PlayerMovement.IsResumeInputSuppressActive)
+            return;
+
         // Shift 입력 → 블링크 시도
         if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {

@@ -116,7 +116,8 @@ public class CutscenePlayer : MonoBehaviour
     private Coroutine _textEffectRoutine;
     Coroutine _resumeInputSuppressRoutine;
     private bool _isPlaying;
-    private bool _skipCurrentLine; // 현재 라인 타이핑 즉시 완성 요청
+    private bool _skipCurrentLine;         // HoldWithSkip용 라인 스킵 플래그
+    private bool _confirmWaitInputReady;   // ShowConfirm 전용 — _skipCurrentLine과 공유 방지
 
     CutsceneState _cutsceneState = CutsceneState.Idle;
     IList<CutsceneLine> _resumeLineList;
@@ -242,8 +243,9 @@ public class CutscenePlayer : MonoBehaviour
             _dialogueGroup.alpha = 1f;
         }
 
-        // 트윈·FadeOut 도중 중단 시 검정 화면이 남는 경우 — 게임플레이 가시성 회복 (FadeManager 별도 오버레이는 미연동)
-        if (_fadeOverlay != null && _fadeOverlay.alpha > 0.99f)
+        // FadeOut 도중 중단 등으로 오버레이가 조금이라도 남아 화면을 가리는 경우 즉시 제거
+        // 기준: alpha > 0.01 이면 잔상으로 판단 — 0.99f 기준은 절반쯤 어두운 상태를 놓쳤음
+        if (_fadeOverlay != null && _fadeOverlay.alpha > 0.01f)
         {
             _fadeOverlay.alpha = 0f;
             _fadeOverlay.gameObject.SetActive(false);
@@ -678,15 +680,15 @@ public class CutscenePlayer : MonoBehaviour
             yield return FadeGroup(_narrationGroup, 0f, 1f, _textFadeDuration);
         }
 
-        // "[ Space ] 계속" 프롬프트 표시
+        // Confirm 전용 대기 — _skipCurrentLine(HoldWithSkip용)과 격리해 이중 소비 방지
         // TODO: 전용 PromptText UI 연결 — 2026-04-02
-        _skipCurrentLine = false;
+        _confirmWaitInputReady = false;
         yield return new WaitUntil(() =>
         {
-            if (Input.GetKeyDown(KeyCode.Space)) { _skipCurrentLine = true; }
-            return _skipCurrentLine;
+            if (Input.GetKeyDown(KeyCode.Space)) _confirmWaitInputReady = true;
+            return _confirmWaitInputReady;
         });
-        _skipCurrentLine = false;
+        _confirmWaitInputReady = false;
 
         // 페이드 아웃
         if (!string.IsNullOrEmpty(speaker))

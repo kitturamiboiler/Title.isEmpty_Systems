@@ -52,7 +52,7 @@ public class PlayerParryController2D : MonoBehaviour
     private float _activeTimer;
     private float _coolTimer;
 
-    private static readonly Collider2D[] _overlapBuffer = new Collider2D[8];
+    private static readonly Collider2D[] _overlapBuffer = new Collider2D[16];
 
     // ─── Lifecycle ────────────────────────────────────────────────────────────
 
